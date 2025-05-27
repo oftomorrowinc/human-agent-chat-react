@@ -1,0 +1,86 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title #{title} - Team Chat
+    link(rel="stylesheet", href="/css/human-agent-chat.css")
+    link(rel="stylesheet", href="/css/team-chat.css")
+    script(src="/htmx/htmx.min.js")
+    script(type="module", src="/js/team-chat.js")
+  body
+    .container
+      header
+        .header-left
+          a.back-link(href="/") 
+            span.back-icon ←
+            span Back to Dashboard
+        h1 #{title}
+        .user-info
+          if user.photoURL
+            img.user-avatar(src=user.photoURL, alt=user.displayName)
+          else
+            .user-avatar-initials #{user.displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+          .user-name #{user.displayName}
+      
+      .chat-layout
+        .sidebar
+          .section-header Team Members
+          ul.member-list
+            each member in members
+              li.member-item(class=member.isAgent ? 'agent-member' : '')
+                if member.photoURL
+                  img.member-avatar(src=member.photoURL, alt=member.displayName)
+                else
+                  .member-avatar-initials #{member.displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                .member-name #{member.displayName}
+                if member.isAgent
+                  .member-badge AI
+          
+          .section-header Actions
+          .action-buttons
+            button.action-btn#open-form-btn Create Feedback Form
+            button.action-btn Share File
+        
+        .chat-area
+          #chat-container.chat-container
+            // Chat UI will be initialized here
+
+      footer
+        p HumanAgentChat © 2023
+
+    // Firebase scripts
+    script(src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js")
+    script(src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js")
+    script(src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js")
+    script(src="https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js")
+    
+    // Initialize chat
+    script.
+      // This would be fetched from your environment in a real app
+      const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID"
+      };
+      
+      // User info passed from server
+      const currentUser = {
+        id: "#{user.id}",
+        displayName: "#{user.displayName}",
+        email: "#{user.email}",
+        photoURL: "#{user.photoURL || ''}"
+      };
+      
+      // Chat path passed from server
+      const chatPath = "#{chatPath}";
+      
+      // Agent IDs
+      const agentIds = !{JSON.stringify(agentIds)};
+      
+      document.addEventListener('DOMContentLoaded', () => {
+        initializeTeamChat(firebaseConfig, currentUser, chatPath, agentIds);
+      });

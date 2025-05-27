@@ -1,0 +1,83 @@
+{
+  "name": "human-agent-chat-react",
+  "version": "0.1.0",
+  "description": "A modern React chat system for human-AI collaboration with Firebase backend",
+  "private": true,
+  "dependencies": {
+    "@tailwindcss/forms": "^0.5.7",
+    "@tailwindcss/typography": "^0.5.10",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.68",
+    "@types/react": "^18.2.42",
+    "@types/react-dom": "^18.2.17",
+    "date-fns": "^2.30.0",
+    "firebase": "^10.7.0",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "tailwindcss": "^3.3.6",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    "zod": "^3.22.4",
+    "zod-form-react": "github:oftomorrowinc/zod-form-react#v1.0.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "format": "prettier --write src/**/*.{ts,tsx,css,md}",
+    "format:check": "prettier --check src/**/*.{ts,tsx,css,md}",
+    "type-check": "tsc --noEmit",
+    "example:basic": "npx serve examples/basic -p 3001",
+    "example:advanced": "npx serve examples/advanced -p 3002",
+    "examples": "npm-run-all --parallel example:basic example:advanced",
+    "demo": "echo \"\n🚀 Starting Chat Examples Demo\n\n📋 OPTIONAL: For full functionality, start Firebase emulators in a separate terminal:\n   npm run emulators\n\n🌐 Opening examples at:\n   • Basic: http://localhost:3001\n   • Advanced: http://localhost:3002\n\" && npm run examples",
+    "emulators": "firebase emulators:start --only firestore,auth,storage --project demo-project"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest",
+      "prettier"
+    ],
+    "rules": {
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          "argsIgnorePattern": "^_"
+        }
+      ],
+      "react/button-has-type": "warn"
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.62.0",
+    "autoprefixer": "^10.4.16",
+    "eslint-config-prettier": "^10.1.5",
+    "firebase-tools": "^13.0.0",
+    "npm-run-all": "^4.1.5",
+    "postcss": "^8.4.32",
+    "prettier": "^3.5.3",
+    "serve": "^14.2.1"
+  }
+}

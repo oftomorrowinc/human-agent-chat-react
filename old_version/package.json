@@ -1,0 +1,68 @@
+{
+  "name": "human-agent-chat",
+  "version": "0.1.0",
+  "description": "A reusable Node.js chat UI npm package component with HTMX integration for human-AI collaboration",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc && node ./scripts/fix-module-paths.js",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepare": "npm run build",
+    "emulators": "firebase emulators:start",
+    "emulators:export": "firebase emulators:start --import=./emulator-data --export-on-exit=./emulator-data",
+    "example:simple": "cd examples/simple && node server.js",
+    "example:one-to-many": "cd examples/one-to-many && node server.js",
+    "example:many-to-many": "cd examples/many-to-many && node server.js",
+    "release": "git add . && git commit -m \"Release v$npm_package_version\" && git tag -a v$npm_package_version -m \"Release v$npm_package_version\" && git push && git push --tags"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/human-agent-chat.git"
+  },
+  "keywords": [
+    "chat",
+    "ui",
+    "htmx",
+    "firebase",
+    "human-ai",
+    "collaboration"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/human-agent-chat/issues"
+  },
+  "homepage": "https://github.com/yourusername/human-agent-chat#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "firebase": "^10.7.0",
+    "firebase-admin": "^11.11.0",
+    "htmx.org": "^1.9.9",
+    "pug": "^3.0.2",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^29.5.10",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.12.0",
+    "@typescript-eslint/parser": "^6.12.0",
+    "eslint": "^8.54.0",
+    "firebase-functions-test": "^3.4.1",
+    "firebase-tools": "^14.3.1",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.1.0",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.3.2"
+  },
+  "peerDependencies": {
+    "express": "^4.18.2"
+  }
+}

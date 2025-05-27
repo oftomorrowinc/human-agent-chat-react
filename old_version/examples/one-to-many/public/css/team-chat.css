@@ -1,0 +1,179 @@
+/* Team chat styles */
+.container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: var(--background-dark);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.back-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  color: var(--text-color);
+  margin-right: 1.5rem;
+}
+
+.back-icon {
+  margin-right: 0.5rem;
+}
+
+.chat-layout {
+  display: flex;
+  flex: 1;
+}
+
+.sidebar {
+  width: 250px;
+  background-color: var(--background-darker);
+  border-right: 1px solid var(--border-color);
+  padding: 1.5rem 1rem;
+  overflow-y: auto;
+}
+
+.chat-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-container {
+  flex: 1;
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  background-color: var(--background-dark);
+  border-top: 1px solid var(--border-color);
+}
+
+/* User info */
+.user-info {
+  display: flex;
+  align-items: center;
+}
+
+.user-avatar, .user-avatar-initials {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.user-avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: bold;
+}
+
+/* Section headers */
+.section-header {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 1.5rem 0 0.75rem;
+  color: var(--text-muted);
+}
+
+/* Member list */
+.member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 0.5rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.member-item:hover {
+  background-color: var(--background-hover);
+}
+
+.member-avatar, .member-avatar-initials {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.member-avatar-initials {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--accent-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.agent-member .member-avatar-initials {
+  background-color: var(--agent-color);
+}
+
+.member-badge {
+  margin-left: auto;
+  background-color: var(--agent-color);
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 0.25rem;
+}
+
+/* Action buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.action-btn {
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.25rem;
+  background-color: var(--accent-color);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background-color: var(--accent-color-hover);
+}
+
+/* CSS variables (these would be defined in the main human-agent-chat.css) */
+:root {
+  --background-dark: #1a1a1a;
+  --background-darker: #121212;
+  --background-hover: #333;
+  --text-color: #f8f8f8;
+  --text-muted: #888;
+  --border-color: #333;
+  --accent-color: #9069ed; /* Updated to match new theme */
+  --accent-color-hover: #805ee0; /* Updated to match new theme */
+  --agent-color: #10b981;
+}

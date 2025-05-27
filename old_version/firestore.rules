@@ -1,0 +1,22 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // For development, allow all access
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Production rules (to be enabled later)
+    // Messages rules
+    // match /{path=**}/messages/{messageId} {
+    //   allow read: if true;
+    //   allow write: if true;
+    // }
+    
+    // Members rules
+    // match /{path=**}/members/{memberId} {
+    //   allow read: if true;
+    //   allow write: if true;
+    // }
+  }
+}

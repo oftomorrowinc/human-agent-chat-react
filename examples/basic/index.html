@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Chat Example - Human Agent Chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #1a1b2e;
+            border-right: 1px solid #2d3748;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+        }
+        
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #f7fafc;
+        }
+        
+        .sidebar-subtitle {
+            font-size: 14px;
+            color: #a0aec0;
+            margin: 0;
+        }
+        
+        .demo-controls {
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .control-group {
+            margin-bottom: 24px;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #cbd5e0;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .demo-button {
+            width: 100%;
+            padding: 12px 16px;
+            background: #4a5568;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            color: #f7fafc;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+        
+        .demo-button:hover {
+            background: #718096;
+            border-color: #4a5568;
+        }
+        
+        .demo-button.primary {
+            background: #3182ce;
+            border-color: #2c5aa0;
+        }
+        
+        .demo-button.primary:hover {
+            background: #2c5aa0;
+        }
+        
+        .chat-area {
+            flex: 1;
+            background: #0f0f1a;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 16px;
+            color: #a0aec0;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4a5568;
+            border-top: 2px solid #3182ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            padding: 20px;
+            color: #fc8181;
+            background: #742a2a;
+            border: 1px solid #e53e3e;
+            border-radius: 8px;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar with Demo Controls -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">Basic Chat Example</h1>
+                <p class="sidebar-subtitle">Demonstrates simple chat functionality</p>
+            </div>
+            
+            <div class="demo-controls">
+                <div class="control-group">
+                    <label class="control-label">User Selection</label>
+                    <button class="demo-button" onclick="switchUser('user1')">Switch to User 1</button>
+                    <button class="demo-button" onclick="switchUser('user2')">Switch to User 2</button>
+                    <button class="demo-button" onclick="switchUser('ai_assistant')">Switch to AI Assistant</button>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Quick Messages</label>
+                    <button class="demo-button" onclick="sendQuickMessage('Hello everyone!')">Send Hello</button>
+                    <button class="demo-button" onclick="sendQuickMessage('How is the project coming along?')">Ask About Project</button>
+                    <button class="demo-button" onclick="sendQuickMessage('Great work team! 🎉')">Send Praise</button>
+                    <button class="demo-button" onclick="sendImageMessage()">Send Test Image</button>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">AI Messages</label>
+                    <button class="demo-button primary" onclick="sendAIMessage()">Send AI Response</button>
+                    <button class="demo-button primary" onclick="sendAIMention()">AI Mentions User</button>
+                </div>
+                
+                <div class="control-group">
+                    <label class="control-label">Current User</label>
+                    <div id="current-user-display" style="padding: 12px; background: #2d3748; border-radius: 8px; font-size: 14px;">
+                        User 1
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div id="chat-loading" class="loading">
+                <div class="spinner"></div>
+                Initializing chat...
+            </div>
+            <div id="chat-error" class="error" style="display: none;"></div>
+            <div id="chat-container"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <div class="lightbox-content" onclick="event.stopPropagation()">
+            <button class="lightbox-close" onclick="closeLightbox()">×</button>
+            <img id="lightbox-image" class="lightbox-image" src="" alt="Lightbox Image">
+        </div>
+    </div>
+
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getAuth, connectAuthEmulator, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+        import { getStorage, connectStorageEmulator } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js';
+
+        // Demo users
+        const demoUsers = {
+            user1: {
+                id: 'user1',
+                displayName: 'User 1',
+                email: 'user1@example.com',
+                role: 'user'
+            },
+            user2: {
+                id: 'user2', 
+                displayName: 'User 2',
+                email: 'user2@example.com',
+                role: 'user'
+            },
+            ai_assistant: {
+                id: 'ai_assistant',
+                displayName: 'AI Assistant',
+                email: 'ai@example.com',
+                role: 'agent',
+                isAgent: true
+            }
+        };
+
+        let currentUser = demoUsers.user1;
+        let chatComponent = null;
+
+        // Firebase configuration (using emulator)
+        const firebaseConfig = {
+            apiKey: 'demo-key',
+            authDomain: 'demo-project.firebaseapp.com',
+            projectId: 'demo-project',
+            storageBucket: 'demo-project.appspot.com',
+            messagingSenderId: '123456789',
+            appId: 'demo-app-id'
+        };
+
+        async function initializeFirebase() {
+            try {
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                const auth = getAuth(app);
+                const firestore = getFirestore(app);
+                const storage = getStorage(app);
+
+                // Connect to emulators (if running)
+                try {
+                    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+                    connectFirestoreEmulator(firestore, 'localhost', 8080);
+                    connectStorageEmulator(storage, 'localhost', 9199);
+                    console.log('Connected to Firebase emulators');
+                } catch (emulatorError) {
+                    console.log('Firebase emulators not available, using production (or will fail gracefully)');
+                }
+
+                // Sign in anonymously
+                await signInAnonymously(auth);
+                console.log('Signed in anonymously');
+
+                return { app, auth, firestore, storage };
+            } catch (error) {
+                console.error('Firebase initialization error:', error);
+                throw error;
+            }
+        }
+
+        async function initializeChat() {
+            try {
+                // Initialize Firebase
+                const firebase = await initializeFirebase();
+
+                // Hide loading
+                document.getElementById('chat-loading').style.display = 'none';
+
+                // Create simple chat interface
+                createChatInterface();
+                
+                console.log('Chat initialized successfully');
+                
+            } catch (error) {
+                console.error('Chat initialization error:', error);
+                document.getElementById('chat-loading').style.display = 'none';
+                const errorEl = document.getElementById('chat-error');
+                errorEl.style.display = 'block';
+                errorEl.textContent = `Failed to initialize chat: ${error.message}`;
+            }
+        }
+
+        function createChatInterface() {
+            const chatContainer = document.querySelector('.chat-area');
+            chatContainer.innerHTML = `
+                <div class="chat-interface">
+                    <div class="chat-header">
+                        <h3># basic-chat</h3>
+                        <div class="current-user">${currentUser.displayName}</div>
+                    </div>
+                    <div class="messages-container" id="messages">
+                        <div class="date-divider">Today</div>
+                    </div>
+                    <div class="message-input-container">
+                        <div class="message-input-wrapper">
+                            <input type="text" id="messageInput" placeholder="Message #basic-chat" />
+                            <button class="send-button" onclick="sendMessage()">Send</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add CSS for Discord-style chat interface
+            const style = document.createElement('style');
+            style.textContent = `
+                .chat-interface {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    background: #36393f;
+                }
+                .chat-header {
+                    padding: 12px 16px;
+                    border-bottom: 1px solid #40444b;
+                    background: #36393f;
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                }
+                .chat-header h3 {
+                    margin: 0;
+                    color: #ffffff;
+                    font-size: 16px;
+                    font-weight: 600;
+                }
+                .current-user {
+                    color: #b9bbbe;
+                    font-size: 12px;
+                    background: #40444b;
+                    padding: 4px 8px;
+                    border-radius: 12px;
+                }
+                .messages-container {
+                    flex: 1;
+                    padding: 0;
+                    overflow-y: auto;
+                    background: #36393f;
+                }
+                .message {
+                    padding: 2px 16px 2px 72px;
+                    margin: 0;
+                    position: relative;
+                    min-height: 22px;
+                    color: #dcddde;
+                    word-wrap: break-word;
+                    line-height: 1.375rem;
+                }
+                .message:hover {
+                    background: #32353b;
+                }
+                .message-group {
+                    margin-top: 17px;
+                    padding: 2px 16px;
+                }
+                .message-avatar {
+                    position: absolute;
+                    left: 16px;
+                    top: 2px;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 50%;
+                    background: #5865f2;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-weight: 600;
+                    font-size: 14px;
+                    cursor: pointer;
+                }
+                .message-avatar.agent {
+                    background: #57f287;
+                    color: #000;
+                }
+                .message-avatar.user {
+                    background: #5865f2;
+                }
+                .message-header {
+                    margin-bottom: 2px;
+                    line-height: 1.375rem;
+                }
+                .message-username {
+                    color: #ffffff;
+                    font-size: 1rem;
+                    font-weight: 500;
+                    margin-right: 8px;
+                    cursor: pointer;
+                }
+                .message-username:hover {
+                    text-decoration: underline;
+                }
+                .message-username.agent {
+                    color: #57f287;
+                }
+                .message-timestamp {
+                    color: #72767d;
+                    font-size: 0.75rem;
+                    font-weight: 500;
+                    margin-left: 8px;
+                }
+                .message-content {
+                    color: #dcddde;
+                    font-size: 1rem;
+                    line-height: 1.375rem;
+                    margin: 0;
+                }
+                .message-reactions {
+                    margin-top: 4px;
+                    display: flex;
+                    gap: 4px;
+                }
+                .reaction {
+                    background: #40444b;
+                    border: 1px solid #40444b;
+                    border-radius: 8px;
+                    padding: 2px 6px;
+                    font-size: 12px;
+                    color: #b9bbbe;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    gap: 2px;
+                }
+                .reaction:hover {
+                    background: #4f535c;
+                    border-color: #72767d;
+                }
+                .date-divider {
+                    display: flex;
+                    align-items: center;
+                    margin: 24px 16px 8px;
+                    font-size: 12px;
+                    font-weight: 600;
+                    color: #72767d;
+                    text-transform: uppercase;
+                }
+                .date-divider::before,
+                .date-divider::after {
+                    content: '';
+                    flex: 1;
+                    height: 1px;
+                    background: #40444b;
+                }
+                .date-divider::before {
+                    margin-right: 8px;
+                }
+                .date-divider::after {
+                    margin-left: 8px;
+                }
+                .message-input-container {
+                    padding: 16px;
+                    background: #36393f;
+                }
+                .message-input-wrapper {
+                    background: #40444b;
+                    border-radius: 8px;
+                    padding: 11px 16px;
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    min-height: 22px;
+                }
+                #messageInput {
+                    flex: 1;
+                    background: transparent;
+                    border: none;
+                    color: #dcddde;
+                    font-size: 16px;
+                    line-height: 1.375rem;
+                    resize: none;
+                    outline: none;
+                    font-family: inherit;
+                }
+                #messageInput::placeholder {
+                    color: #72767d;
+                }
+                .send-button {
+                    background: #5865f2;
+                    border: none;
+                    border-radius: 4px;
+                    color: white;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                    font-size: 12px;
+                    font-weight: 500;
+                    opacity: 0;
+                    transition: opacity 0.15s ease;
+                }
+                .message-input-wrapper:focus-within .send-button,
+                .message-input-wrapper.has-content .send-button {
+                    opacity: 1;
+                }
+                .send-button:hover {
+                    background: #4752c4;
+                }
+                
+                /* Lightbox Styles */
+                .lightbox {
+                    display: none;
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.9);
+                    z-index: 10000;
+                    cursor: pointer;
+                }
+                
+                .lightbox.active {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }
+                
+                .lightbox-content {
+                    position: relative;
+                    max-width: 90%;
+                    max-height: 90%;
+                    cursor: default;
+                }
+                
+                .lightbox-image {
+                    max-width: 100%;
+                    max-height: 100%;
+                    object-fit: contain;
+                    border-radius: 8px;
+                    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+                }
+                
+                .lightbox-close {
+                    position: absolute;
+                    top: -40px;
+                    right: -40px;
+                    width: 32px;
+                    height: 32px;
+                    background: rgba(255, 255, 255, 0.1);
+                    border: none;
+                    border-radius: 50%;
+                    color: white;
+                    font-size: 18px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: background 0.2s;
+                }
+                
+                .lightbox-close:hover {
+                    background: rgba(255, 255, 255, 0.2);
+                }
+                
+                .message-image {
+                    max-width: 300px;
+                    max-height: 200px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    transition: opacity 0.2s;
+                    margin: 4px 0;
+                    display: block;
+                }
+                
+                .message-image:hover {
+                    opacity: 0.8;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Add message input handlers
+            const messageInput = document.getElementById('messageInput');
+            const inputWrapper = document.querySelector('.message-input-wrapper');
+            
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                }
+            });
+            
+            messageInput.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    inputWrapper.classList.add('has-content');
+                } else {
+                    inputWrapper.classList.remove('has-content');
+                }
+            });
+        }
+
+        function addMessage(content, sender = null) {
+            const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) return;
+
+            const user = sender || currentUser;
+            const now = new Date();
+            const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Process content for images
+            const processedContent = processMessageContent(content);
+            
+            // Check if we need to group with previous message
+            const lastMessage = messagesContainer.lastElementChild;
+            const shouldGroup = lastMessage && 
+                lastMessage.classList.contains('message-group') &&
+                lastMessage.dataset.userId === user.id;
+
+            if (shouldGroup) {
+                // Add to existing group
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message';
+                messageEl.innerHTML = `
+                    <div class="message-content">${processedContent}</div>
+                `;
+                lastMessage.appendChild(messageEl);
+            } else {
+                // Create new message group
+                const messageGroupEl = document.createElement('div');
+                messageGroupEl.className = 'message-group';
+                messageGroupEl.dataset.userId = user.id;
+                
+                const avatarClass = user.isAgent ? 'agent' : 'user';
+                const usernameClass = user.isAgent ? 'agent' : '';
+                const initials = user.displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
+                
+                messageGroupEl.innerHTML = `
+                    <div class="message-avatar ${avatarClass}">${initials}</div>
+                    <div class="message">
+                        <div class="message-header">
+                            <span class="message-username ${usernameClass}">${user.displayName}</span>
+                            <span class="message-timestamp">${timestamp}</span>
+                        </div>
+                        <div class="message-content">${processedContent}</div>
+                        <div class="message-reactions">
+                            <div class="reaction" onclick="toggleReaction(this, '👍')">👍 <span>1</span></div>
+                            <div class="reaction" onclick="toggleReaction(this, '😊')">😊</div>
+                        </div>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(messageGroupEl);
+            }
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function processMessageContent(content) {
+            // Simple regex to detect image URLs
+            const imageRegex = /https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^\s]*)?/gi;
+            
+            return content.replace(imageRegex, (imageUrl) => {
+                return `<img src="${imageUrl}" class="message-image" onclick="openLightbox('${imageUrl}')" alt="Shared image">`;
+            });
+        }
+
+        // Lightbox functions
+        function openLightbox(imageSrc) {
+            const lightbox = document.getElementById('lightbox');
+            const lightboxImage = document.getElementById('lightbox-image');
+            
+            lightboxImage.src = imageSrc;
+            lightbox.classList.add('active');
+            
+            // Focus for keyboard navigation
+            lightbox.focus();
+        }
+
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            lightbox.classList.remove('active');
+        }
+
+        // Keyboard support for lightbox
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const lightbox = document.getElementById('lightbox');
+                if (lightbox.classList.contains('active')) {
+                    closeLightbox();
+                }
+            }
+        });
+
+        function toggleReaction(reactionEl, emoji) {
+            const countSpan = reactionEl.querySelector('span');
+            if (countSpan) {
+                const count = parseInt(countSpan.textContent) || 0;
+                if (count > 1) {
+                    countSpan.textContent = count - 1;
+                } else {
+                    reactionEl.remove();
+                }
+            } else {
+                reactionEl.innerHTML = `${emoji} <span>1</span>`;
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            if (!input || !input.value.trim()) return;
+
+            const content = input.value.trim();
+            addMessage(content);
+            input.value = '';
+
+            // Simulate AI response for demo
+            if (Math.random() > 0.5) {
+                setTimeout(() => {
+                    const responses = [
+                        "That's interesting! Tell me more.",
+                        "I understand. How can I help with that?",
+                        "Thanks for sharing that information.",
+                        "Let me think about that for a moment...",
+                        "I see what you mean. Here's my perspective..."
+                    ];
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage(response, demoUsers.ai_assistant);
+                }, 1000 + Math.random() * 2000);
+            }
+        }
+
+        // Demo functions
+        window.switchUser = function(userId) {
+            currentUser = demoUsers[userId];
+            document.getElementById('current-user-display').textContent = currentUser.displayName;
+            
+            // Update current user display in chat
+            const userDisplay = document.querySelector('.current-user');
+            if (userDisplay) {
+                userDisplay.textContent = currentUser.displayName;
+            }
+            
+            console.log('Switched to user:', currentUser.displayName);
+        };
+
+        window.sendQuickMessage = function(message) {
+            addMessage(message);
+            console.log(`Sent message as ${currentUser.displayName}: ${message}`);
+        };
+
+        window.sendImageMessage = function() {
+            const testImageUrl = 'https://picsum.photos/800/600?random=' + Math.floor(Math.random() * 1000);
+            const message = `Check out this image: ${testImageUrl}`;
+            addMessage(message);
+            console.log(`Sent image message as ${currentUser.displayName}: ${message}`);
+        };
+
+        window.sendAIMessage = function() {
+            const aiMessages = [
+                "I'm here to help! What can I assist you with today?",
+                "Based on the conversation, I recommend focusing on the user experience first.",
+                "I've analyzed the requirements and have some suggestions.",
+                "Let me know if you need any clarification on the technical details."
+            ];
+            const randomMessage = aiMessages[Math.floor(Math.random() * aiMessages.length)];
+            
+            addMessage(randomMessage, demoUsers.ai_assistant);
+            console.log('AI sent message:', randomMessage);
+        };
+
+        window.sendAIMention = function() {
+            const mentionMessages = [
+                `@${currentUser.displayName} I think your approach is spot on!`,
+                `@${currentUser.displayName} Could you provide more details about that?`,
+                `@${currentUser.displayName} I have some insights that might help.`
+            ];
+            const randomMessage = mentionMessages[Math.floor(Math.random() * mentionMessages.length)];
+            
+            addMessage(randomMessage, demoUsers.ai_assistant);
+            console.log('AI sent mention:', randomMessage);
+        };
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeChat);
+    </script>
+</body>
+</html>

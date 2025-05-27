@@ -1,0 +1,51 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title #{title}
+    link(rel="stylesheet", href="/css/human-agent-chat.css")
+    link(rel="stylesheet", href="/css/dashboard.css")
+    script(src="/htmx/htmx.min.js")
+  body
+    .container
+      header
+        h1 #{title}
+        .user-info
+          if user.photoURL
+            img.user-avatar(src=user.photoURL, alt=user.displayName)
+          else
+            .user-avatar-initials #{user.displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+          .user-name #{user.displayName}
+      
+      nav.sidebar
+        h2 Teams
+        ul.team-list
+          each team in teams
+            li.team-item
+              a(href=`/team/${team.id}`) #{team.name}
+      
+      main.dashboard-content
+        .welcome-panel
+          h2 Welcome to Team Chat
+          p Select a team from the sidebar to start chatting
+          
+          .features-grid
+            .feature-card
+              h3 Hierarchical Access Control
+              p Control access at any level with a consistent members collection pattern
+            
+            .feature-card
+              h3 Multi-modal Support
+              p Share text, images, videos, and documents seamlessly
+            
+            .feature-card
+              h3 AI Agent Integration
+              p Collaborate with AI agents within your team chats
+            
+            .feature-card
+              h3 Interactive Forms
+              p Create and share dynamic forms using Zod schemas
+      
+      footer
+        p HumanAgentChat © 2023

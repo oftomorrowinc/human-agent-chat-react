@@ -1,0 +1,2273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Chat Example - Human Agent Chat</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #0f0f1a;
+            color: #e2e8f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .app-container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        .sidebar {
+            width: 350px;
+            background: #1a1b2e;
+            border-right: 1px solid #2d3748;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid #2d3748;
+            background: #16213e;
+        }
+        
+        .sidebar-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0 0 8px 0;
+            color: #f7fafc;
+        }
+        
+        .sidebar-subtitle {
+            font-size: 14px;
+            color: #a0aec0;
+            margin: 0;
+        }
+        
+        .demo-controls {
+            padding: 20px;
+            flex: 1;
+        }
+        
+        .control-group {
+            margin-bottom: 24px;
+            border: 1px solid #2d3748;
+            border-radius: 8px;
+            padding: 16px;
+            background: #171832;
+        }
+        
+        .control-label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #e2e8f0;
+            margin-bottom: 12px;
+            display: block;
+            border-bottom: 1px solid #2d3748;
+            padding-bottom: 8px;
+        }
+        
+        .control-description {
+            font-size: 12px;
+            color: #a0aec0;
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+        
+        .demo-button {
+            width: 100%;
+            padding: 12px 16px;
+            background: #4a5568;
+            border: 1px solid #2d3748;
+            border-radius: 6px;
+            color: #f7fafc;
+            cursor: pointer;
+            font-size: 13px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .demo-button:hover {
+            background: #718096;
+            border-color: #4a5568;
+            transform: translateY(-1px);
+        }
+        
+        .demo-button.primary {
+            background: #3182ce;
+            border-color: #2c5aa0;
+        }
+        
+        .demo-button.primary:hover {
+            background: #2c5aa0;
+        }
+        
+        .demo-button.danger {
+            background: #e53e3e;
+            border-color: #c53030;
+        }
+        
+        .demo-button.danger:hover {
+            background: #c53030;
+        }
+        
+        .demo-button.success {
+            background: #38a169;
+            border-color: #2f855a;
+        }
+        
+        .demo-button.success:hover {
+            background: #2f855a;
+        }
+        
+        .button-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .button-text {
+            flex: 1;
+        }
+        
+        .button-desc {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-top: 2px;
+        }
+        
+        .chat-area {
+            flex: 1;
+            background: #0f0f1a;
+        }
+        
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            font-size: 16px;
+            color: #a0aec0;
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #4a5568;
+            border-top: 2px solid #3182ce;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            padding: 20px;
+            color: #fc8181;
+            background: #742a2a;
+            border: 1px solid #e53e3e;
+            border-radius: 8px;
+            margin: 20px;
+        }
+        
+        .current-user-card {
+            background: #2d3748;
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4a5568;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 16px;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            margin: 0 0 4px 0;
+            font-size: 14px;
+        }
+        
+        .user-role {
+            font-size: 12px;
+            color: #a0aec0;
+            margin: 0;
+        }
+        
+        .form-preview {
+            background: #2a2d3a;
+            border: 1px solid #4a5568;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 8px;
+            font-family: monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #e2e8f0;
+            max-height: 120px;
+            overflow-y: auto;
+        }
+
+        /* Discord-Style Chat Interface */
+        .advanced-chat-interface {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: #36393f;
+        }
+        
+        .chat-header {
+            padding: 12px 16px;
+            border-bottom: 1px solid #40444b;
+            background: #36393f;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .chat-header h3 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .current-user-status {
+            color: #b9bbbe;
+            font-size: 12px;
+            background: #40444b;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+        
+        .user-badge {
+            padding: 2px 6px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 4px;
+        }
+        
+        .user-badge.agent {
+            background: #57f287;
+            color: #000;
+        }
+        
+        .user-badge.admin {
+            background: #faa61a;
+            color: #000;
+        }
+        
+        .user-badge.user {
+            background: #5865f2;
+            color: #fff;
+        }
+        
+        .messages-container {
+            flex: 1;
+            padding: 0;
+            overflow-y: auto;
+            background: #36393f;
+        }
+        
+        .message {
+            padding: 2px 16px 2px 72px;
+            margin: 0;
+            position: relative;
+            min-height: 22px;
+            color: #dcddde;
+            word-wrap: break-word;
+            line-height: 1.375rem;
+            animation: fadeIn 0.3s ease-in;
+        }
+        
+        .message:hover {
+            background: #32353b;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message-group {
+            margin-top: 17px;
+            padding: 2px 16px;
+        }
+        
+        .message-group.system {
+            border-left: 3px solid #f04747;
+            background: rgba(240, 71, 71, 0.1);
+        }
+        
+        .message-avatar {
+            position: absolute;
+            left: 16px;
+            top: 2px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .message-avatar.agent {
+            background: #57f287;
+            color: #000;
+        }
+        
+        .message-avatar.user {
+            background: #5865f2;
+        }
+        
+        .message-avatar.system {
+            background: #f04747;
+        }
+        
+        .message-header {
+            margin-bottom: 2px;
+            line-height: 1.375rem;
+        }
+        
+        .message-username {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-right: 8px;
+            cursor: pointer;
+        }
+        
+        .message-username:hover {
+            text-decoration: underline;
+        }
+        
+        .message-username.agent {
+            color: #57f287;
+        }
+        
+        .message-username.system {
+            color: #f04747;
+        }
+        
+        .message-timestamp {
+            color: #72767d;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+        
+        .message-content {
+            color: #dcddde;
+            font-size: 1rem;
+            line-height: 1.375rem;
+            margin: 0;
+        }
+        
+        .message-attachments {
+            margin-top: 8px;
+        }
+        
+        .attachment {
+            background: #2f3136;
+            border-radius: 4px;
+            padding: 8px;
+            margin-bottom: 4px;
+            border: 1px solid #40444b;
+        }
+        
+        .attachment-image {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .attachment-video {
+            width: 100%;
+            max-width: 400px;
+            height: 225px;
+            border-radius: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .attachment-audio {
+            width: 100%;
+            margin-bottom: 4px;
+        }
+        
+        .attachment-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+        
+        .attachment-description {
+            font-size: 12px;
+            color: #b9bbbe;
+        }
+        
+        .attachment-document {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px;
+            background: #2f3136;
+            border-radius: 4px;
+            text-decoration: none;
+            color: #dcddde;
+            transition: background 0.2s;
+        }
+        
+        .attachment-document:hover {
+            background: #36393f;
+        }
+        
+        .attachment-icon {
+            font-size: 20px;
+        }
+        
+        .message-reactions {
+            margin-top: 4px;
+            display: flex;
+            gap: 4px;
+        }
+        
+        .reaction {
+            background: #40444b;
+            border: 1px solid #40444b;
+            border-radius: 8px;
+            padding: 2px 6px;
+            font-size: 12px;
+            color: #b9bbbe;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 2px;
+        }
+        
+        .reaction:hover {
+            background: #4f535c;
+            border-color: #72767d;
+        }
+        
+        .form-container {
+            background: #2f3136;
+            border: 1px solid #5865f2;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 8px;
+        }
+        
+        .form-title {
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #5865f2;
+        }
+        
+        .form-field {
+            margin-bottom: 12px;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 500;
+            color: #dcddde;
+            font-size: 14px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #40444b;
+            background: #36393f;
+            color: #dcddde;
+            box-sizing: border-box;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #5865f2;
+        }
+        
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #40444b;
+            background: #36393f;
+            color: #dcddde;
+            box-sizing: border-box;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #40444b;
+            background: #36393f;
+            color: #dcddde;
+            min-height: 80px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+        .form-checkbox {
+            margin-right: 8px;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        
+        .form-submit {
+            background: #5865f2;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .form-submit:hover {
+            background: #4752c4;
+        }
+        
+        .form-cancel {
+            background: #4f545c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .form-cancel:hover {
+            background: #5d6269;
+        }
+        
+        .message-input-container {
+            padding: 16px;
+            background: #36393f;
+        }
+        
+        .message-input-wrapper {
+            background: #40444b;
+            border-radius: 8px;
+            padding: 11px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-height: 22px;
+        }
+        
+        .message-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #dcddde;
+            font-size: 16px;
+            line-height: 1.375rem;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            min-height: 22px;
+            max-height: 120px;
+        }
+        
+        .message-input::placeholder {
+            color: #72767d;
+        }
+        
+        .send-button {
+            background: #5865f2;
+            border: none;
+            border-radius: 4px;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.15s ease;
+        }
+        
+        .message-input-wrapper:focus-within .send-button,
+        .message-input-wrapper.has-content .send-button {
+            opacity: 1;
+        }
+        
+        .send-button:hover {
+            background: #4752c4;
+        }
+        
+        .send-button:disabled {
+            background: #4f545c;
+            cursor: not-allowed;
+        }
+        
+        .input-controls {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+        }
+        
+        .file-upload-button {
+            padding: 6px 12px;
+            background: #4f545c;
+            color: #dcddde;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .file-upload-button:hover {
+            background: #5d6269;
+        }
+        
+        .date-divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 16px 8px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #72767d;
+            text-transform: uppercase;
+        }
+        
+        .date-divider::before,
+        .date-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #40444b;
+        }
+        
+        .date-divider::before {
+            margin-right: 8px;
+        }
+        
+        .date-divider::after {
+            margin-left: 8px;
+        }
+        
+        .typing-indicator {
+            padding: 16px 20px;
+            color: #a0aec0;
+            font-style: italic;
+            font-size: 14px;
+        }
+        
+        .mention {
+            background: #5865f2;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        /* Media Grid Layout */
+        .media-grid {
+            display: grid;
+            gap: 4px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-top: 8px;
+            max-width: 400px;
+        }
+        
+        .media-grid.single {
+            grid-template-columns: 1fr;
+        }
+        
+        .media-grid.double {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .media-grid.triple {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        
+        .media-grid.quad {
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+        }
+        
+        .media-grid-item {
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            border-radius: 4px;
+            background: #2f3136;
+        }
+        
+        .media-grid.triple .media-grid-item:first-child {
+            grid-column: 1 / -1;
+        }
+        
+        .media-grid-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+        
+        .media-grid-item:hover img {
+            transform: scale(1.05);
+        }
+        
+        .media-grid-item iframe {
+            width: 100%;
+            height: 200px;
+            border: none;
+            display: block;
+        }
+        
+        .media-grid.single .media-grid-item {
+            height: 250px;
+        }
+        
+        .media-grid.double .media-grid-item {
+            height: 150px;
+        }
+        
+        .media-grid.triple .media-grid-item:first-child {
+            height: 200px;
+        }
+        
+        .media-grid.triple .media-grid-item:not(:first-child) {
+            height: 100px;
+        }
+        
+        .media-grid.quad .media-grid-item {
+            height: 120px;
+        }
+        
+        .media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .media-grid-item:hover .media-overlay {
+            opacity: 1;
+        }
+        
+        /* Lightbox Styles */
+        .lightbox {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .lightbox.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .lightbox-content {
+            position: relative;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .lightbox-media {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+        
+        .lightbox-video {
+            width: 80vw;
+            height: 45vw;
+            max-height: 80vh;
+            border-radius: 8px;
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s ease;
+            z-index: 10001;
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+        
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10001;
+        }
+        
+        .lightbox-nav:hover {
+            background: rgba(0, 0, 0, 0.9);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .lightbox-nav:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+        
+        .lightbox-nav:disabled:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: translateY(-50%) scale(1);
+        }
+        
+        .lightbox-prev {
+            left: 20px;
+        }
+        
+        .lightbox-next {
+            right: 20px;
+        }
+        
+        .lightbox-counter {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 10001;
+        }
+        
+        .lightbox-title {
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            max-width: 80vw;
+            text-align: center;
+            z-index: 10001;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Advanced Sidebar with Rich Controls -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="sidebar-title">Advanced Chat Example</h1>
+                <p class="sidebar-subtitle">Rich media, forms, and AI interactions</p>
+            </div>
+            
+            <div class="demo-controls">
+                <!-- Current User Display -->
+                <div class="control-group">
+                    <label class="control-label">Current User</label>
+                    <div id="current-user-display" class="current-user-card">
+                        <div class="user-avatar" id="user-avatar">AJ</div>
+                        <div class="user-info">
+                            <div class="user-name" id="user-name">Alice Johnson</div>
+                            <div class="user-role" id="user-role">Team Member</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- User Switching -->
+                <div class="control-group">
+                    <label class="control-label">👥 User Management</label>
+                    <p class="control-description">Switch between different user types to see role-based features</p>
+                    <button class="demo-button" onclick="switchUser('user1')">
+                        <span class="button-icon">👤</span>
+                        <div class="button-text">
+                            Alice Johnson
+                            <div class="button-desc">Regular team member</div>
+                        </div>
+                    </button>
+                    <button class="demo-button" onclick="switchUser('user2')">
+                        <span class="button-icon">👥</span>
+                        <div class="button-text">
+                            Bob Smith  
+                            <div class="button-desc">Another team member</div>
+                        </div>
+                    </button>
+                    <button class="demo-button" onclick="switchUser('project_manager')">
+                        <span class="button-icon">👔</span>
+                        <div class="button-text">
+                            Carol Manager
+                            <div class="button-desc">Admin privileges</div>
+                        </div>
+                    </button>
+                    <button class="demo-button primary" onclick="switchUser('ai_assistant')">
+                        <span class="button-icon">🤖</span>
+                        <div class="button-text">
+                            AI Assistant
+                            <div class="button-desc">Intelligent agent</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Rich Media Messages -->
+                <div class="control-group">
+                    <label class="control-label">🎨 Rich Media Content</label>
+                    <p class="control-description">Send messages with images, videos, and documents</p>
+                    
+                    <button class="demo-button success" onclick="sendImageMessage()">
+                        <span class="button-icon">🖼️</span>
+                        <div class="button-text">
+                            Send Image
+                            <div class="button-desc">Single image attachment</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button success" onclick="sendImageGallery()">
+                        <span class="button-icon">🖼️</span>
+                        <div class="button-text">
+                            Image Gallery
+                            <div class="button-desc">Multiple images</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button success" onclick="sendYouTubeVideo()">
+                        <span class="button-icon">📺</span>
+                        <div class="button-text">
+                            YouTube Video
+                            <div class="button-desc">Video with preview</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button success" onclick="sendAudioMessage()">
+                        <span class="button-icon">🔊</span>
+                        <div class="button-text">
+                            Audio File
+                            <div class="button-desc">Audio with player</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button success" onclick="sendDocument()">
+                        <span class="button-icon">📄</span>
+                        <div class="button-text">
+                            Document
+                            <div class="button-desc">PDF or other file</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Zod Form Examples -->
+                <div class="control-group">
+                    <label class="control-label">📝 Interactive Forms (Zod)</label>
+                    <p class="control-description">AI can request structured data using Zod schemas</p>
+                    
+                    <button class="demo-button primary" onclick="sendFeedbackForm()">
+                        <span class="button-icon">⭐</span>
+                        <div class="button-text">
+                            Feedback Form
+                            <div class="button-desc">Rating & comments</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button primary" onclick="sendContactForm()">
+                        <span class="button-icon">📞</span>
+                        <div class="button-text">
+                            Contact Info
+                            <div class="button-desc">Name, email, phone</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button primary" onclick="sendProjectForm()">
+                        <span class="button-icon">🚀</span>
+                        <div class="button-text">
+                            Project Details
+                            <div class="button-desc">Complex form</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button primary" onclick="sendSurveyForm()">
+                        <span class="button-icon">📊</span>
+                        <div class="button-text">
+                            Survey
+                            <div class="button-desc">Multiple choice</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- AI Interactions -->
+                <div class="control-group">
+                    <label class="control-label">🤖 AI Interactions</label>
+                    <p class="control-description">Intelligent agent responses and mentions</p>
+                    
+                    <button class="demo-button primary" onclick="sendAIGreeting()">
+                        <span class="button-icon">👋</span>
+                        <div class="button-text">
+                            AI Greeting
+                            <div class="button-desc">Friendly introduction</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button primary" onclick="sendAIAnalysis()">
+                        <span class="button-icon">📊</span>
+                        <div class="button-text">
+                            AI Analysis
+                            <div class="button-desc">Technical insights</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button primary" onclick="sendAIMention()">
+                        <span class="button-icon">📣</span>
+                        <div class="button-text">
+                            AI Mention
+                            <div class="button-desc">Mentions current user</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button primary" onclick="sendAIWithMedia()">
+                        <span class="button-icon">🎨</span>
+                        <div class="button-text">
+                            AI + Media
+                            <div class="button-desc">AI with attachments</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- System Messages -->
+                <div class="control-group">
+                    <label class="control-label">⚙️ System Messages</label>
+                    <p class="control-description">Automated system notifications</p>
+                    
+                    <button class="demo-button" onclick="sendSystemMessage()">
+                        <span class="button-icon">📢</span>
+                        <div class="button-text">
+                            System Alert
+                            <div class="button-desc">Status update</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button success" onclick="sendTaskComplete()">
+                        <span class="button-icon">✅</span>
+                        <div class="button-text">
+                            Task Complete
+                            <div class="button-desc">Success notification</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button danger" onclick="sendErrorMessage()">
+                        <span class="button-icon">❌</span>
+                        <div class="button-text">
+                            Error Alert
+                            <div class="button-desc">Error notification</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- File Upload Simulation -->
+                <div class="control-group">
+                    <label class="control-label">📎 File Upload Demo</label>
+                    <p class="control-description">Simulate file uploads with different types</p>
+                    
+                    <button class="demo-button success" onclick="simulateFileUpload('image')">
+                        <span class="button-icon">🖼️</span>
+                        <div class="button-text">
+                            Upload Image
+                            <div class="button-desc">Simulate image upload</div>
+                        </div>
+                    </button>
+                    
+                    <button class="demo-button success" onclick="simulateFileUpload('document')">
+                        <span class="button-icon">📄</span>
+                        <div class="button-text">
+                            Upload Document
+                            <div class="button-desc">Simulate PDF upload</div>
+                        </div>
+                    </button>
+                </div>
+                
+                <!-- Current Form Preview -->
+                <div class="control-group">
+                    <label class="control-label">🔍 Form Schema Preview</label>
+                    <p class="control-description">Preview of the last generated Zod schema</p>
+                    <div id="form-preview" class="form-preview">
+                        No form schema generated yet.
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="chat-area">
+            <div id="chat-loading" class="loading">
+                <div class="spinner"></div>
+                Initializing advanced chat features...
+            </div>
+            <div id="chat-error" class="error" style="display: none;"></div>
+            <div id="chat-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Advanced demo users with more roles
+        const demoUsers = {
+            user1: {
+                id: 'user1',
+                displayName: 'Alice Johnson',
+                email: 'alice@example.com',
+                role: 'user',
+                avatar: 'AJ',
+                color: '#3182ce'
+            },
+            user2: {
+                id: 'user2', 
+                displayName: 'Bob Smith',
+                email: 'bob@example.com',
+                role: 'user',
+                avatar: 'BS',
+                color: '#38a169'
+            },
+            project_manager: {
+                id: 'project_manager',
+                displayName: 'Carol Manager',
+                email: 'carol@example.com',
+                role: 'admin',
+                avatar: 'CM',
+                color: '#d69e2e'
+            },
+            ai_assistant: {
+                id: 'ai_assistant',
+                displayName: 'AI Assistant',
+                email: 'ai@example.com',
+                role: 'agent',
+                isAgent: true,
+                avatar: '🤖',
+                color: '#805ad5'
+            }
+        };
+
+        let currentUser = demoUsers.user1;
+        let lastFormSchema = null;
+        let messageIdCounter = 0;
+
+        async function initializeChat() {
+            try {
+                // Hide loading
+                document.getElementById('chat-loading').style.display = 'none';
+
+                // Create advanced chat interface
+                createAdvancedChatInterface();
+                
+                console.log('✅ Advanced chat initialized successfully');
+                
+                // Update UI
+                updateUserDisplay();
+                
+                // Send welcome message
+                setTimeout(() => {
+                    addMessage({
+                        content: "Welcome to the Advanced Chat Example! This demo showcases rich media, interactive forms, and AI agent capabilities. Use the sidebar controls to explore different features.",
+                        senderId: 'system',
+                        senderName: 'System',
+                        senderRole: 'system'
+                    });
+                }, 500);
+                
+            } catch (error) {
+                console.error('❌ Chat initialization error:', error);
+                document.getElementById('chat-loading').style.display = 'none';
+                const errorEl = document.getElementById('chat-error');
+                errorEl.style.display = 'block';
+                errorEl.textContent = `Failed to initialize chat: ${error.message}`;
+            }
+        }
+
+        function createAdvancedChatInterface() {
+            const chatContainer = document.querySelector('.chat-area');
+            chatContainer.innerHTML = `
+                <div class="advanced-chat-interface">
+                    <div class="chat-header">
+                        <h3># advanced-chat</h3>
+                        <div class="current-user-status">
+                            ${currentUser.displayName}
+                            <span class="user-badge ${currentUser.role}" id="user-badge">${getRoleBadgeText(currentUser.role)}</span>
+                        </div>
+                    </div>
+                    <div class="messages-container" id="messages">
+                        <div class="date-divider">Today</div>
+                    </div>
+                    <div id="typing-indicator" class="typing-indicator" style="display: none;">
+                        Someone is typing...
+                    </div>
+                    <div class="message-input-container">
+                        <div class="message-input-wrapper">
+                            <textarea id="messageInput" class="message-input" placeholder="Message #advanced-chat" rows="1"></textarea>
+                            <button id="sendButton" class="send-button" onclick="sendUserMessage()">Send</button>
+                        </div>
+                        <div class="input-controls">
+                            <button class="file-upload-button" onclick="simulateFileUpload('image')">📎 Image</button>
+                            <button class="file-upload-button" onclick="simulateFileUpload('document')">📄 File</button>
+                            <span style="font-size: 12px; color: #72767d;">Press Enter to send, Shift+Enter for new line</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            // Add message input handlers
+            const messageInput = document.getElementById('messageInput');
+            const inputWrapper = document.querySelector('.message-input-wrapper');
+            
+            messageInput.addEventListener('input', function() {
+                autoResizeTextarea();
+                if (this.value.trim()) {
+                    inputWrapper.classList.add('has-content');
+                } else {
+                    inputWrapper.classList.remove('has-content');
+                }
+            });
+            
+            messageInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendUserMessage();
+                }
+            });
+        }
+
+        function autoResizeTextarea() {
+            const textarea = document.getElementById('messageInput');
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
+
+        function getRoleBadgeText(role) {
+            switch (role) {
+                case 'agent': return 'AI';
+                case 'admin': return 'Admin';
+                case 'user': return 'User';
+                default: return 'User';
+            }
+        }
+
+        function updateUserDisplay() {
+            const user = currentUser;
+            document.getElementById('user-avatar').textContent = user.avatar;
+            document.getElementById('user-avatar').style.background = user.color;
+            document.getElementById('user-name').textContent = user.displayName;
+            document.getElementById('user-role').textContent = user.role === 'agent' ? 'AI Agent' : 
+                                                                user.role === 'admin' ? 'Project Manager' : 
+                                                                'Team Member';
+            
+            // Update chat header
+            const userStatus = document.querySelector('.current-user-status strong');
+            const userBadge = document.getElementById('user-badge');
+            if (userStatus) userStatus.textContent = user.displayName;
+            if (userBadge) {
+                userBadge.className = `user-badge ${user.role}`;
+                userBadge.textContent = getRoleBadgeText(user.role);
+            }
+        }
+
+        function updateFormPreview(schema) {
+            lastFormSchema = schema;
+            const preview = document.getElementById('form-preview');
+            if (schema) {
+                preview.textContent = JSON.stringify(schema, null, 2);
+            } else {
+                preview.textContent = 'No form schema generated yet.';
+            }
+        }
+
+        function addMessage(messageData) {
+            const messagesContainer = document.getElementById('messages');
+            if (!messagesContainer) return;
+
+            const messageId = `msg-${++messageIdCounter}`;
+            const senderUser = Object.values(demoUsers).find(u => u.id === messageData.senderId) || currentUser;
+            const isAgent = messageData.fromAiAgent || senderUser.isAgent;
+            const isSystem = messageData.senderRole === 'system';
+            
+            const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Check if we need to group with previous message
+            const lastMessage = messagesContainer.lastElementChild;
+            const shouldGroup = lastMessage && 
+                lastMessage.classList.contains('message-group') &&
+                lastMessage.dataset.userId === messageData.senderId;
+
+            let attachmentsHtml = '';
+            if (messageData.attachments && messageData.attachments.length > 0) {
+                attachmentsHtml = renderAttachments(messageData.attachments);
+            }
+
+            let formHtml = '';
+            if (messageData.dataRequest) {
+                formHtml = renderForm(messageData.dataRequest, messageId);
+            }
+
+            // Process mentions in content
+            let processedContent = messageData.content;
+            if (processedContent.includes('@')) {
+                processedContent = processedContent.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+            }
+
+            if (shouldGroup) {
+                // Add to existing group
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message';
+                messageEl.id = messageId;
+                messageEl.innerHTML = `
+                    <div class="message-content">
+                        ${processedContent}
+                        ${attachmentsHtml}
+                        ${formHtml}
+                    </div>
+                `;
+                lastMessage.appendChild(messageEl);
+            } else {
+                // Create new message group
+                const messageGroupEl = document.createElement('div');
+                messageGroupEl.className = `message-group ${isSystem ? 'system' : ''}`;
+                messageGroupEl.dataset.userId = messageData.senderId;
+                
+                const avatarClass = isSystem ? 'system' : isAgent ? 'agent' : 'user';
+                const usernameClass = isSystem ? 'system' : isAgent ? 'agent' : '';
+                const avatar = senderUser.avatar || messageData.senderName?.[0] || '?';
+                
+                messageGroupEl.innerHTML = `
+                    <div class="message-avatar ${avatarClass}">${avatar}</div>
+                    <div class="message" id="${messageId}">
+                        <div class="message-header">
+                            <span class="message-username ${usernameClass}">${messageData.senderName || senderUser.displayName}</span>
+                            <span class="message-timestamp">${time}</span>
+                        </div>
+                        <div class="message-content">
+                            ${processedContent}
+                            ${attachmentsHtml}
+                            ${formHtml}
+                        </div>
+                        <div class="message-reactions">
+                            <div class="reaction" onclick="toggleReaction(this, '👍')">👍 <span>1</span></div>
+                            <div class="reaction" onclick="toggleReaction(this, '😊')">😊</div>
+                        </div>
+                    </div>
+                `;
+                
+                messagesContainer.appendChild(messageGroupEl);
+            }
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+        
+        function toggleReaction(reactionEl, emoji) {
+            const countSpan = reactionEl.querySelector('span');
+            if (countSpan) {
+                const count = parseInt(countSpan.textContent) || 0;
+                if (count > 1) {
+                    countSpan.textContent = count - 1;
+                } else {
+                    reactionEl.remove();
+                }
+            } else {
+                reactionEl.innerHTML = `${emoji} <span>1</span>`;
+            }
+        }
+
+        function renderAttachments(attachments) {
+            if (!attachments || attachments.length === 0) return '';
+            
+            // Separate media from other attachments
+            const mediaItems = attachments.filter(att => att.type === 'image' || att.type === 'youtube' || att.type === 'video');
+            const otherAttachments = attachments.filter(att => att.type !== 'image' && att.type !== 'youtube' && att.type !== 'video');
+            
+            let html = '';
+            
+            // Render media grid if there are media items
+            if (mediaItems.length > 0) {
+                html += renderMediaGrid(mediaItems);
+            }
+            
+            // Render other attachments normally
+            if (otherAttachments.length > 0) {
+                html += '<div class="message-attachments">';
+                html += otherAttachments.map(att => renderAttachment(att)).join('');
+                html += '</div>';
+            }
+            
+            return html;
+        }
+        
+        function renderMediaGrid(mediaItems) {
+            const count = mediaItems.length;
+            let gridClass = 'single';
+            
+            if (count === 2) gridClass = 'double';
+            else if (count === 3) gridClass = 'triple';
+            else if (count >= 4) gridClass = 'quad';
+            
+            let gridHtml = `<div class="media-grid ${gridClass}">`;
+            
+            const itemsToShow = Math.min(count, 4);
+            for (let i = 0; i < itemsToShow; i++) {
+                const item = mediaItems[i];
+                const isLast = i === 3 && count > 4;
+                const remaining = count - 4;
+                
+                gridHtml += `<div class="media-grid-item" onclick="openLightbox(${i}, '${btoa(JSON.stringify(mediaItems))}')">`;
+                
+                if (item.type === 'image') {
+                    gridHtml += `<img src="${item.url}" alt="${item.title || 'Image'}" loading="lazy" />`;
+                } else if (item.type === 'youtube') {
+                    const videoId = item.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+                    gridHtml += `<img src="https://img.youtube.com/vi/${videoId}/maxresdefault.jpg" alt="${item.title || 'YouTube video'}" loading="lazy" />`;
+                } else if (item.type === 'video') {
+                    gridHtml += `<video><source src="${item.url}" type="${item.mimeType || 'video/mp4'}"></video>`;
+                }
+                
+                if (isLast && remaining > 0) {
+                    gridHtml += `<div class="media-overlay">+${remaining}</div>`;
+                }
+                
+                gridHtml += '</div>';
+            }
+            
+            gridHtml += '</div>';
+            return gridHtml;
+        }
+
+        function renderAttachment(attachment) {
+            switch (attachment.type) {
+                case 'image':
+                    return `
+                        <div class="attachment">
+                            <img src="${attachment.url}" alt="${attachment.title || 'Image'}" class="attachment-image" loading="lazy" onclick="openSingleImageLightbox('${attachment.url}', '${attachment.title || 'Image'}')" style="cursor: pointer;" />
+                            ${attachment.title ? `<div class="attachment-title">${attachment.title}</div>` : ''}
+                            ${attachment.description ? `<div class="attachment-description">${attachment.description}</div>` : ''}
+                        </div>
+                    `;
+                case 'youtube':
+                    const videoId = attachment.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+                    return `
+                        <div class="attachment">
+                            <iframe 
+                                class="attachment-video" 
+                                src="https://www.youtube.com/embed/${videoId}" 
+                                title="${attachment.title || 'YouTube video'}" 
+                                frameborder="0" 
+                                allowfullscreen>
+                            </iframe>
+                            ${attachment.title ? `<div class="attachment-title">${attachment.title}</div>` : ''}
+                        </div>
+                    `;
+                case 'audio':
+                    return `
+                        <div class="attachment">
+                            <audio controls class="attachment-audio">
+                                <source src="${attachment.url}" type="${attachment.mimeType || 'audio/mpeg'}">
+                                Your browser does not support the audio element.
+                            </audio>
+                            ${attachment.title ? `<div class="attachment-title">${attachment.title}</div>` : ''}
+                        </div>
+                    `;
+                case 'document':
+                    return `
+                        <div class="attachment">
+                            <a href="${attachment.url}" target="_blank" class="attachment-document">
+                                <span class="attachment-icon">📄</span>
+                                <div>
+                                    <div class="attachment-title">${attachment.title || 'Document'}</div>
+                                    <div class="attachment-description">${attachment.mimeType || 'Unknown type'}</div>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                default:
+                    return `
+                        <div class="attachment">
+                            <div class="attachment-title">${attachment.title || 'Attachment'}</div>
+                            ${attachment.description ? `<div class="attachment-description">${attachment.description}</div>` : ''}
+                        </div>
+                    `;
+            }
+        }
+
+        function renderForm(schema, messageId) {
+            const formId = `form-${messageId}`;
+            let fieldsHtml = '';
+
+            Object.entries(schema).forEach(([fieldName, fieldDef]) => {
+                const description = extractDescription(fieldDef);
+                const isOptional = fieldDef.includes('.optional()');
+                const isArray = fieldDef.includes('z.array(');
+                const isEnum = fieldDef.includes('z.enum(');
+                const isBoolean = fieldDef.includes('z.boolean()');
+                const isNumber = fieldDef.includes('z.number()');
+
+                if (isBoolean) {
+                    fieldsHtml += `
+                        <div class="form-field">
+                            <label class="form-label">
+                                <input type="checkbox" class="form-checkbox" name="${fieldName}" />
+                                ${description || fieldName}
+                            </label>
+                        </div>
+                    `;
+                } else if (isEnum) {
+                    const enumValues = extractEnumValues(fieldDef);
+                    fieldsHtml += `
+                        <div class="form-field">
+                            <label class="form-label">${description || fieldName}${!isOptional ? ' *' : ''}</label>
+                            <select class="form-select" name="${fieldName}" ${!isOptional ? 'required' : ''}>
+                                <option value="">Choose...</option>
+                                ${enumValues.map(val => `<option value="${val}">${val}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
+                } else if (fieldName.includes('description') || fieldName.includes('comments') || fieldName.includes('message')) {
+                    fieldsHtml += `
+                        <div class="form-field">
+                            <label class="form-label">${description || fieldName}${!isOptional ? ' *' : ''}</label>
+                            <textarea class="form-textarea" name="${fieldName}" ${!isOptional ? 'required' : ''}></textarea>
+                        </div>
+                    `;
+                } else {
+                    const inputType = isNumber ? 'number' : 
+                                    fieldName.includes('email') ? 'email' :
+                                    fieldName.includes('phone') ? 'tel' :
+                                    fieldName.includes('date') ? 'date' : 'text';
+                    
+                    fieldsHtml += `
+                        <div class="form-field">
+                            <label class="form-label">${description || fieldName}${!isOptional ? ' *' : ''}</label>
+                            <input type="${inputType}" class="form-input" name="${fieldName}" ${!isOptional ? 'required' : ''} />
+                        </div>
+                    `;
+                }
+            });
+
+            return `
+                <div class="form-container">
+                    <div class="form-title">📝 Please fill out this form:</div>
+                    <form id="${formId}" onsubmit="submitForm(event, '${messageId}')">
+                        ${fieldsHtml}
+                        <div class="form-buttons">
+                            <button type="submit" class="form-submit">Submit</button>
+                            <button type="button" class="form-cancel" onclick="cancelForm('${messageId}')">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function extractDescription(fieldDef) {
+            const match = fieldDef.match(/\.describe\('([^']+)'\)/);
+            return match ? match[1] : null;
+        }
+
+        function extractEnumValues(fieldDef) {
+            const match = fieldDef.match(/z\.enum\(\[([^\]]+)\]\)/);
+            if (match) {
+                return match[1].split(',').map(v => v.trim().replace(/'/g, ''));
+            }
+            return [];
+        }
+
+        function submitForm(event, messageId) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = {};
+            
+            for (let [key, value] of formData.entries()) {
+                if (event.target.elements[key].type === 'checkbox') {
+                    data[key] = event.target.elements[key].checked;
+                } else {
+                    data[key] = value;
+                }
+            }
+
+            // Add response message
+            addMessage({
+                content: `✅ Form submitted successfully!\n\n**Data received:**\n\`\`\`json\n${JSON.stringify(data, null, 2)}\n\`\`\``,
+                senderId: currentUser.id,
+                senderName: currentUser.displayName
+            });
+
+            // Hide the form
+            const messageEl = document.getElementById(messageId);
+            const formContainer = messageEl.querySelector('.form-container');
+            if (formContainer) {
+                formContainer.innerHTML = '<div style="color: #38a169; font-weight: 600;">✅ Form completed</div>';
+            }
+        }
+
+        function cancelForm(messageId) {
+            const messageEl = document.getElementById(messageId);
+            const formContainer = messageEl.querySelector('.form-container');
+            if (formContainer) {
+                formContainer.innerHTML = '<div style="color: #a0aec0; font-style: italic;">Form cancelled</div>';
+            }
+        }
+
+        function sendUserMessage() {
+            const input = document.getElementById('messageInput');
+            const inputWrapper = document.querySelector('.message-input-wrapper');
+            if (!input || !input.value.trim()) return;
+
+            const content = input.value.trim();
+            addMessage({
+                content: content,
+                senderId: currentUser.id,
+                senderName: currentUser.displayName
+            });
+            
+            input.value = '';
+            inputWrapper.classList.remove('has-content');
+            autoResizeTextarea();
+
+            // Simulate AI response for some messages
+            if (content.toLowerCase().includes('help') || content.toLowerCase().includes('ai') || Math.random() > 0.7) {
+                simulateTyping();
+                setTimeout(() => {
+                    hideTyping();
+                    const responses = [
+                        "I'm here to assist! What specific help do you need?",
+                        "Based on your message, I can provide some insights. Would you like me to analyze anything specific?",
+                        "I understand your request. Let me help you with that.",
+                        "That's an interesting point. I can elaborate on that topic if you'd like.",
+                        "I'm analyzing your request. Is there a particular aspect you'd like me to focus on?"
+                    ];
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    addMessage({
+                        content: response,
+                        senderId: 'ai_assistant',
+                        senderName: 'AI Assistant',
+                        fromAiAgent: true
+                    });
+                }, 1500 + Math.random() * 2000);
+            }
+        }
+
+        function simulateTyping() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.style.display = 'block';
+        }
+
+        function hideTyping() {
+            const indicator = document.getElementById('typing-indicator');
+            if (indicator) indicator.style.display = 'none';
+        }
+
+        // Demo Functions - User Management
+        window.switchUser = function(userId) {
+            currentUser = demoUsers[userId];
+            updateUserDisplay();
+            console.log('👤 Switched to user:', currentUser.displayName);
+        };
+
+        // Demo Functions - Rich Media
+        window.sendImageMessage = function() {
+            const message = {
+                content: "Check out this beautiful landscape!",
+                senderId: currentUser.id,
+                senderName: currentUser.displayName,
+                attachments: [{
+                    type: 'image',
+                    url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&h=800',
+                    title: 'Mountain Landscape',
+                    description: 'Beautiful mountain vista with crystal clear lake'
+                }]
+            };
+            addMessage(message);
+        };
+
+        window.sendImageGallery = function() {
+            const message = {
+                content: "Here are the design mockups we discussed:",
+                senderId: currentUser.id,
+                senderName: currentUser.displayName,
+                attachments: [
+                    {
+                        type: 'image',
+                        url: 'https://images.unsplash.com/photo-1618424181497-157f25b6ddd5?w=1200&h=900',
+                        title: 'Design Mockup 1',
+                        description: 'Homepage layout concept'
+                    },
+                    {
+                        type: 'image', 
+                        url: 'https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=1200&h=900',
+                        title: 'Design Mockup 2',
+                        description: 'User dashboard interface'
+                    },
+                    {
+                        type: 'image',
+                        url: 'https://images.unsplash.com/photo-1618477388954-7852f32655ec?w=1200&h=900',
+                        title: 'Design Mockup 3',
+                        description: 'Mobile responsive design'
+                    },
+                    {
+                        type: 'image',
+                        url: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=1200&h=800',
+                        title: 'Design Mockup 4',
+                        description: 'Color scheme variations'
+                    },
+                    {
+                        type: 'image',
+                        url: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=1200&h=800',
+                        title: 'Design Mockup 5',
+                        description: 'Analytics dashboard'
+                    }
+                ]
+            };
+            addMessage(message);
+        };
+
+        window.sendYouTubeVideo = function() {
+            const message = {
+                content: "This tutorial explains the concept really well:",
+                senderId: currentUser.id,
+                senderName: currentUser.displayName,
+                attachments: [{
+                    type: 'youtube',
+                    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                    title: 'React Tutorial - Advanced Patterns'
+                }]
+            };
+            addMessage(message);
+        };
+
+        window.sendAudioMessage = function() {
+            const message = {
+                content: "Listen to this voice note about the project:",
+                senderId: currentUser.id,
+                senderName: currentUser.displayName,
+                attachments: [{
+                    type: 'audio',
+                    url: 'https://file-examples.com/storage/fe14eb58c4608145968248c/2017/11/file_example_MP3_700KB.mp3',
+                    title: 'Project Update Voice Note',
+                    mimeType: 'audio/mpeg'
+                }]
+            };
+            addMessage(message);
+        };
+
+        window.sendDocument = function() {
+            const message = {
+                content: "Please review the attached project specification:",
+                senderId: currentUser.id,
+                senderName: currentUser.displayName,
+                attachments: [{
+                    type: 'document',
+                    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf',
+                    title: 'Project Specification v2.1.pdf',
+                    mimeType: 'application/pdf'
+                }]
+            };
+            addMessage(message);
+        };
+
+        // Demo Functions - Zod Forms
+        window.sendFeedbackForm = function() {
+            const schema = {
+                rating: "z.number().min(1).max(5).describe('Rate your experience from 1-5')",
+                comments: "z.string().min(10).max(500).describe('Share your detailed feedback')",
+                wouldRecommend: "z.boolean().describe('Would you recommend us to others?')",
+                category: "z.enum(['ui', 'performance', 'features', 'support']).describe('Feedback category')"
+            };
+            
+            updateFormPreview(schema);
+            
+            const message = {
+                content: `@${currentUser.displayName} Please provide your feedback on the recent updates:`,
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true,
+                recipientIds: [currentUser.id],
+                dataRequest: schema
+            };
+            addMessage(message);
+        };
+
+        window.sendContactForm = function() {
+            const schema = {
+                firstName: "z.string().min(1).describe('First name')",
+                lastName: "z.string().min(1).describe('Last name')", 
+                email: "z.string().email().describe('Email address')",
+                phone: "z.string().optional().describe('Phone number (optional)')",
+                company: "z.string().optional().describe('Company name (optional)')",
+                role: "z.enum(['developer', 'designer', 'manager', 'other']).describe('Your role')"
+            };
+            
+            updateFormPreview(schema);
+            
+            const message = {
+                content: `@${currentUser.displayName} I need to update your contact information:`,
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true,
+                recipientIds: [currentUser.id],
+                dataRequest: schema
+            };
+            addMessage(message);
+        };
+
+        window.sendProjectForm = function() {
+            const schema = {
+                projectName: "z.string().min(3).describe('Project name')",
+                description: "z.string().min(50).max(500).describe('Project description')",
+                priority: "z.enum(['low', 'medium', 'high', 'urgent']).describe('Project priority')",
+                deadline: "z.string().describe('Deadline (YYYY-MM-DD)')",
+                budget: "z.number().positive().describe('Budget in USD')",
+                teamSize: "z.number().min(1).max(50).describe('Expected team size')",
+                hasDesignPhase: "z.boolean().describe('Includes design phase?')",
+                clientName: "z.string().optional().describe('Client name (if external)')"
+            };
+            
+            updateFormPreview(schema);
+            
+            const message = {
+                content: `@${currentUser.displayName} Please fill out the project details for the new initiative:`,
+                senderId: 'project_manager',
+                senderName: 'Carol Manager',
+                recipientIds: [currentUser.id],
+                dataRequest: schema
+            };
+            addMessage(message);
+        };
+
+        window.sendSurveyForm = function() {
+            const schema = {
+                experience: "z.enum(['excellent', 'good', 'average', 'poor']).describe('Overall experience')",
+                easeOfUse: "z.number().min(1).max(10).describe('Ease of use (1-10)')",
+                improvements: "z.string().optional().describe('Suggested improvements')",
+                frequency: "z.enum(['daily', 'weekly', 'monthly', 'rarely']).describe('How often do you use this?')",
+                recommendation: "z.number().min(0).max(10).describe('Net Promoter Score (0-10)')"
+            };
+            
+            updateFormPreview(schema);
+            
+            const message = {
+                content: "Quick survey: Help us improve the platform!",
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true,
+                dataRequest: schema
+            };
+            addMessage(message);
+        };
+
+        // Demo Functions - AI Interactions
+        window.sendAIGreeting = function() {
+            const greetings = [
+                "Hello team! I'm your AI assistant, ready to help with any questions or tasks.",
+                "Good to see everyone! I've been analyzing the project and have some insights to share.",
+                "Hi there! I'm here to assist with research, analysis, and any other support you need.",
+                "Welcome! I've reviewed the latest updates and I'm ready to help optimize our workflow."
+            ];
+            
+            const message = {
+                content: greetings[Math.floor(Math.random() * greetings.length)],
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true
+            };
+            addMessage(message);
+        };
+
+        window.sendAIAnalysis = function() {
+            const analyses = [
+                "I've analyzed the codebase and identified 3 potential performance bottlenecks:\n\n1. Unoptimized database queries in the user service\n2. Missing React.memo usage in the dashboard components\n3. Redundant API calls in the notification system\n\nWould you like detailed recommendations for each?",
+                "Based on user feedback patterns, I recommend prioritizing mobile responsiveness improvements. I've detected a 23% increase in mobile usage over the past month.",
+                "Security audit complete: Found 2 minor vulnerabilities that should be addressed. I've prepared a detailed report with remediation steps.",
+                "Performance metrics show a 15% improvement since the last deployment. Loading times have decreased from 2.3s to 1.95s on average."
+            ];
+            
+            const message = {
+                content: analyses[Math.floor(Math.random() * analyses.length)],
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true
+            };
+            addMessage(message);
+        };
+
+        window.sendAIMention = function() {
+            const mentions = [
+                `@${currentUser.displayName} I noticed you're working on the authentication module. I have some security recommendations that might be helpful.`,
+                `@${currentUser.displayName} Your recent code changes look excellent! I'd like to suggest a small optimization for the data processing logic.`,
+                `@${currentUser.displayName} I've found some relevant documentation that could help with the API integration you're working on.`,
+                `@${currentUser.displayName} Based on the error logs, I think I can help you debug that issue you mentioned earlier.`
+            ];
+            
+            const message = {
+                content: mentions[Math.floor(Math.random() * mentions.length)],
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true,
+                recipientIds: [currentUser.id]
+            };
+            addMessage(message);
+        };
+
+        window.sendAIWithMedia = function() {
+            const message = {
+                content: "I've created a visualization of our system architecture to help explain the data flow:",
+                senderId: 'ai_assistant',
+                senderName: 'AI Assistant',
+                fromAiAgent: true,
+                attachments: [{
+                    type: 'image',
+                    url: 'https://images.unsplash.com/photo-1618424181497-157f25b6ddd5?w=1200&h=900',
+                    title: 'System Architecture Diagram',
+                    description: 'Generated architecture visualization showing data flow between components'
+                }]
+            };
+            addMessage(message);
+        };
+
+        // Demo Functions - System Messages
+        window.sendSystemMessage = function() {
+            const messages = [
+                "System maintenance scheduled for tonight at 2 AM EST. Expected downtime: 30 minutes.",
+                "New feature deployment complete. Please refresh your browser to see the latest updates.",
+                "Security update installed successfully. All services are operating normally.",
+                "Database backup completed. All data is secure and backed up."
+            ];
+            
+            const message = {
+                content: messages[Math.floor(Math.random() * messages.length)],
+                senderId: 'system',
+                senderName: 'System',
+                senderRole: 'system'
+            };
+            addMessage(message);
+        };
+
+        window.sendTaskComplete = function() {
+            const completions = [
+                "✅ Task completed: User authentication system has been successfully deployed!",
+                "✅ Sprint milestone reached: All 8 planned features have been implemented and tested.",
+                "✅ Code review completed: All PRs have been approved and merged to main branch.",
+                "✅ Performance optimization finished: Page load times improved by 35%!"
+            ];
+            
+            const message = {
+                content: completions[Math.floor(Math.random() * completions.length)],
+                senderId: 'system',
+                senderName: 'System',
+                senderRole: 'system'
+            };
+            addMessage(message);
+        };
+
+        window.sendErrorMessage = function() {
+            const errors = [
+                "❌ Alert: Database connection timeout detected. DevOps team has been notified.",
+                "❌ Build failed: Unit tests are failing on the feature-auth branch. Please review and fix.",
+                "❌ API rate limit exceeded for external service. Temporary throttling is in effect.",
+                "❌ Memory usage critical on server-02. Auto-scaling has been triggered."
+            ];
+            
+            const message = {
+                content: errors[Math.floor(Math.random() * errors.length)],
+                senderId: 'system',
+                senderName: 'System',
+                senderRole: 'system'
+            };
+            addMessage(message);
+        };
+
+        // File Upload Simulation
+        window.simulateFileUpload = function(type) {
+            const files = {
+                image: {
+                    name: 'screenshot.png',
+                    size: '2.4 MB',
+                    type: 'image/png',
+                    url: 'https://images.unsplash.com/photo-1551650975-87deedd944c3?w=1200&h=800'
+                },
+                document: {
+                    name: 'requirements.pdf',
+                    size: '856 KB', 
+                    type: 'application/pdf',
+                    url: 'https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf'
+                }
+            };
+
+            const file = files[type];
+            if (!file) return;
+
+            // Show upload progress simulation
+            addMessage({
+                content: `📎 Uploading ${file.name} (${file.size})...`,
+                senderId: currentUser.id,
+                senderName: currentUser.displayName
+            });
+
+            // Simulate upload completion
+            setTimeout(() => {
+                const attachment = type === 'image' ? 
+                    {
+                        type: 'image',
+                        url: file.url,
+                        title: file.name,
+                        description: `${file.size} • Uploaded just now`
+                    } :
+                    {
+                        type: 'document',
+                        url: file.url,
+                        title: file.name,
+                        mimeType: file.type
+                    };
+
+                addMessage({
+                    content: `✅ Upload complete!`,
+                    senderId: currentUser.id,
+                    senderName: currentUser.displayName,
+                    attachments: [attachment]
+                });
+            }, 1000 + Math.random() * 2000);
+        };
+
+        // Lightbox functionality
+        let currentLightboxIndex = 0;
+        let currentLightboxMedia = [];
+        
+        function createLightbox() {
+            if (document.getElementById('lightbox')) return;
+            
+            const lightbox = document.createElement('div');
+            lightbox.id = 'lightbox';
+            lightbox.className = 'lightbox';
+            lightbox.innerHTML = `
+                <div class="lightbox-content">
+                    <button class="lightbox-close" onclick="closeLightbox()">&times;</button>
+                    <button class="lightbox-nav lightbox-prev" onclick="previousMedia()">&lt;</button>
+                    <button class="lightbox-nav lightbox-next" onclick="nextMedia()">&gt;</button>
+                    <div id="lightbox-media-container"></div>
+                    <div class="lightbox-counter" id="lightbox-counter"></div>
+                    <div class="lightbox-title" id="lightbox-title"></div>
+                </div>
+            `;
+            document.body.appendChild(lightbox);
+            
+            // Close lightbox when clicking outside content
+            lightbox.addEventListener('click', function(e) {
+                if (e.target === lightbox) {
+                    closeLightbox();
+                }
+            });
+        }
+        
+        function openLightbox(index, encodedMedia) {
+            try {
+                const mediaItems = JSON.parse(atob(encodedMedia));
+                currentLightboxMedia = mediaItems;
+                currentLightboxIndex = index;
+                
+                createLightbox();
+                showLightboxMedia();
+                
+                const lightbox = document.getElementById('lightbox');
+                lightbox.classList.add('active');
+                document.body.style.overflow = 'hidden';
+            } catch (error) {
+                console.error('Error opening lightbox:', error);
+            }
+        }
+        
+        function openSingleImageLightbox(url, title) {
+            const mediaItems = [{ type: 'image', url: url, title: title }];
+            openLightbox(0, btoa(JSON.stringify(mediaItems)));
+        }
+        
+        function closeLightbox() {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox) {
+                lightbox.classList.remove('active');
+                document.body.style.overflow = '';
+                setTimeout(() => {
+                    if (lightbox.parentNode) {
+                        lightbox.parentNode.removeChild(lightbox);
+                    }
+                }, 300);
+            }
+        }
+        
+        function showLightboxMedia() {
+            const container = document.getElementById('lightbox-media-container');
+            const counter = document.getElementById('lightbox-counter');
+            const title = document.getElementById('lightbox-title');
+            const prevBtn = document.querySelector('.lightbox-prev');
+            const nextBtn = document.querySelector('.lightbox-next');
+            
+            if (!container) return;
+            
+            const media = currentLightboxMedia[currentLightboxIndex];
+            const total = currentLightboxMedia.length;
+            
+            // Update counter
+            if (counter) {
+                counter.textContent = total > 1 ? `${currentLightboxIndex + 1} of ${total}` : '';
+            }
+            
+            // Update title
+            if (title) {
+                title.textContent = media.title || '';
+                title.style.display = media.title ? 'block' : 'none';
+            }
+            
+            // Update navigation buttons
+            if (prevBtn && nextBtn) {
+                prevBtn.disabled = currentLightboxIndex === 0;
+                nextBtn.disabled = currentLightboxIndex === total - 1;
+                prevBtn.style.display = total > 1 ? 'flex' : 'none';
+                nextBtn.style.display = total > 1 ? 'flex' : 'none';
+            }
+            
+            // Render media
+            let mediaHtml = '';
+            if (media.type === 'image') {
+                mediaHtml = `<img src="${media.url}" alt="${media.title || 'Image'}" class="lightbox-media" />`;
+            } else if (media.type === 'youtube') {
+                const videoId = media.url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/)?.[1];
+                mediaHtml = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" class="lightbox-video" frameborder="0" allowfullscreen></iframe>`;
+            } else if (media.type === 'video') {
+                mediaHtml = `<video src="${media.url}" class="lightbox-media" controls autoplay></video>`;
+            }
+            
+            container.innerHTML = mediaHtml;
+        }
+        
+        function previousMedia() {
+            if (currentLightboxIndex > 0) {
+                currentLightboxIndex--;
+                showLightboxMedia();
+            }
+        }
+        
+        function nextMedia() {
+            if (currentLightboxIndex < currentLightboxMedia.length - 1) {
+                currentLightboxIndex++;
+                showLightboxMedia();
+            }
+        }
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const lightbox = document.getElementById('lightbox');
+            if (!lightbox || !lightbox.classList.contains('active')) return;
+            
+            switch (e.key) {
+                case 'Escape':
+                    closeLightbox();
+                    break;
+                case 'ArrowLeft':
+                    previousMedia();
+                    break;
+                case 'ArrowRight':
+                    nextMedia();
+                    break;
+            }
+        });
+        
+        // Expose functions globally
+        window.openLightbox = openLightbox;
+        window.openSingleImageLightbox = openSingleImageLightbox;
+        window.closeLightbox = closeLightbox;
+        window.previousMedia = previousMedia;
+        window.nextMedia = nextMedia;
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', initializeChat);
+    </script>
+</body>
+</html>
