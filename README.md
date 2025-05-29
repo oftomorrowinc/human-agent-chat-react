@@ -6,7 +6,8 @@ A modern, opinionated React chat system for human-AI collaboration. Built with F
 
 - **🌙 Dark Mode Only**: Beautiful, modern dark theme optimized for extended use
 - **🔥 Firebase Powered**: Real-time messaging with Firestore, file storage, and authentication
-- **🤖 AI Agent Integration**: Support for AI agents with @mention system
+- **🤖 AI Agent Integration**: Support for AI agents with @mention autocomplete system
+- **😊 Emoji Picker**: Interactive emoji picker with 15+ reactions for quick message enhancement
 - **📋 Dynamic Forms**: Zod-based form generation with modal interfaces using zod-form-react
 - **🔐 Hierarchical Access Control**: Flexible permission system for organizations, teams, and projects
 - **📎 Rich Media Support**: Images, videos, documents, YouTube embeds, and more
@@ -22,6 +23,7 @@ This is a complete rewrite of the original Node.js/Express/Pug system into a mod
 - **Firebase SDK v10** for backend services
 - **Tailwind CSS** for styling (dark theme only)
 - **Zod** for schema validation and form generation
+- **zod-form-react** for dynamic form rendering and modal interfaces
 - **Lucide React** for icons
 - **Date-fns** for date formatting
 
@@ -31,7 +33,15 @@ This is a complete rewrite of the original Node.js/Express/Pug system into a mod
 
 - Node.js 16+ 
 - npm or yarn
-- Firebase project (or use emulators)
+- Firebase project (or use emulators for development)
+
+### Key Dependencies
+
+This project relies on several important packages:
+- **zod-form-react**: Powers the dynamic form generation and modal interfaces
+- **Firebase SDK v10**: Provides real-time database, auth, and storage
+- **Tailwind CSS**: Handles all styling with a custom dark theme
+- **Lucide React**: Provides the icon system
 
 ### Installation
 
@@ -116,7 +126,8 @@ npm run example:basic
 
 Features demonstrated:
 - Simple chat interface with user switching
-- AI agent integration with @mentions
+- AI agent integration with @mention autocomplete
+- Emoji picker with 15+ reactions
 - Real-time Firebase sync
 - Basic message types
 
@@ -128,6 +139,7 @@ npm run example:advanced
 
 Features demonstrated:
 - 🎨 **Rich Media**: Images, YouTube videos, audio, documents
+- 😊 **Interactive UI**: Emoji picker and @mention autocomplete
 - 📝 **Zod Forms**: Interactive schema-based forms
 - 🤖 **AI Interactions**: Smart analysis and insights
 - 👥 **Role Management**: Users, managers, AI agents
@@ -162,11 +174,38 @@ The examples include interactive demo buttons to showcase:
 
 **AI Agent Interactions:**
 - Technical analysis and insights
-- @mention targeting with smart responses
+- @mention targeting with autocomplete dropdown and smart responses
 - Form requests for structured data collection
 - Multi-modal responses with attachments
 
+**Interactive Chat Features:**
+- Emoji picker with 15+ reactions (👍 ❤️ 😂 😮 😢 😡 👀 🙏 🎯 💯 🤷 🎉 🚀 💡 🔥)
+- @mention autocomplete with user filtering and keyboard navigation
+- Click-outside-to-close dropdowns with proper z-index layering
+
 For detailed documentation, see [examples/README.md](./examples/README.md).
+
+## 🎮 Interactive Features
+
+### Emoji Picker
+Click the 😊 button in the message input to access an interactive emoji picker with 15+ reactions:
+- **Grid layout** with hover effects
+- **Instant insertion** at cursor position  
+- **Click outside to close** functionality
+- **Configurable emoji set** in `REACTION_EMOJIS` array
+
+### @Mention Autocomplete  
+Type `@` followed by any letter to trigger the mention autocomplete:
+- **Real-time filtering** as you type (e.g., `@a` shows Alice, `@c` shows Carol)
+- **Keyboard navigation** with arrow keys, tab, and enter
+- **Visual user avatars** with role indicators (AI agents, admins)
+- **Full name completion** with proper spacing
+
+### User Experience
+- **Proper z-index layering** ensures dropdowns appear above other elements
+- **Responsive positioning** relative to the input area
+- **Consistent dark theme** styling throughout
+- **Mobile-friendly** interactions
 
 ## 🎯 Usage
 
@@ -186,7 +225,7 @@ const user = createUser({
 function App() {
   return (
     <ChatUI
-      firebasePath=\"chats/my-chat\"
+      firebasePath="chats/my-chat"
       currentUser={user}
       enableReactions={true}
       enableMultiModal={true}
@@ -374,13 +413,15 @@ REACT_APP_FIREBASE_API_KEY=your_production_key
 ✅ **Fully Implemented:**
 - Hierarchical access control
 - Multi-modal content (images, videos, documents, audio)
-- AI agent integration with @mentions
+- AI agent integration with @mention autocomplete (types `@` + letter to see dropdown)
+- **Emoji picker** with 15 configurable reactions (click 😊 button to see dropdown)
+- **@mention autocomplete** with user filtering, keyboard navigation (arrow keys, tab, enter)
 - Zod-based form generation with stars/slider elements
 - Dark theme UI
 - Firebase integration with emulator support
 - Real-time messaging
 - File uploads with drag & drop
-- **Emoji reactions** with 11 configurable emojis
+- **Emoji reactions** for messages with configurable emojis
 - **Advanced lightbox** for media viewing
 - **Audio playback** with generated WAV files
 - **User switching** with proper message ownership
