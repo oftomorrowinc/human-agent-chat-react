@@ -3,7 +3,6 @@ import { AccessLevel } from '../../types';
 
 // Mock Firebase Firestore
 const mockDoc = jest.fn(() => ({}));
-const mockCollection = jest.fn(() => ({}));
 const mockDocumentData = { exists: jest.fn(), data: jest.fn() };
 
 // Mock the firebase/firestore module first

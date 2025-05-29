@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User as FirebaseUser } from 'firebase/auth';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { initializeFirebase, initDemoAuth } from './lib/firebase';
@@ -21,13 +21,13 @@ function App() {
   const [selectedUser, setSelectedUser] = useState<DemoUser | null>(null);
 
   // Demo users for testing
-  const demoUsers: DemoUser[] = [
+  const demoUsers: DemoUser[] = useMemo(() => [
     { id: 'user1', name: 'Demo User', role: 'user' },
     { id: 'user2', name: 'Team Member', role: 'user' },
     { id: 'admin1', name: 'Admin User', role: 'admin' },
     { id: 'agent_assistant', name: 'AI Assistant', role: 'agent', isAgent: true },
     { id: 'system', name: 'System', role: 'system' }
-  ];
+  ], []);
 
   // Demo chat configurations
   const demoChats = {
@@ -106,7 +106,7 @@ function App() {
     return () => {
       unsubscribe?.then(unsub => unsub?.());
     };
-  }, []);
+  }, [demoUsers]);
 
   // Handle user selection for demo
   const handleUserSelect = (demoUser: DemoUser) => {

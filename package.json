@@ -39,7 +39,11 @@
     "example:advanced": "npx serve examples/advanced -p 3002",
     "examples": "npm-run-all --parallel example:basic example:advanced",
     "demo": "echo \"\n🚀 Starting Chat Examples Demo\n\n📋 OPTIONAL: For full functionality, start Firebase emulators in a separate terminal:\n   npm run emulators\n\n🌐 Opening examples at:\n   • Basic: http://localhost:3001\n   • Advanced: http://localhost:3002\n\" && npm run examples",
-    "emulators": "firebase emulators:start --only firestore,auth,storage --project demo-project"
+    "emulators": "firebase emulators:start --only firestore,auth,storage --project demo-project",
+    "test:examples": "jest --config jest.examples.config.js",
+    "test:examples:watch": "jest --config jest.examples.config.js --watch",
+    "test:examples:debug": "jest --config jest.examples.config.js --detectOpenHandles --forceExit",
+    "test:all": "npm run test && npm run test:examples"
   },
   "eslintConfig": {
     "extends": [
@@ -73,11 +77,14 @@
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "autoprefixer": "^10.4.16",
+    "babel-jest": "^29.7.0",
     "eslint-config-prettier": "^10.1.5",
     "firebase-tools": "^13.0.0",
+    "jest": "^29.7.0",
     "npm-run-all": "^4.1.5",
     "postcss": "^8.4.32",
     "prettier": "^3.5.3",
+    "puppeteer": "^21.6.0",
     "serve": "^14.2.1"
   }
 }

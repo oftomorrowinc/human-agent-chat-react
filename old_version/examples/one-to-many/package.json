@@ -1,7 +1,0 @@
-{
-  "name": "one-to-many-example",
-  "version": "1.0.0",
-  "description": "One-to-many example for human-agent-chat",
-  "type": "module",
-  "main": "server.js"
-}

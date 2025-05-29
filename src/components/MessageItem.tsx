@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import {
-  Heart,
   MessageSquare,
   MoreHorizontal,
   FileText,
@@ -34,6 +33,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
   onReaction,
 }) => {
   const [showActions, setShowActions] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [imageError, setImageError] = useState<Record<string, boolean>>({});
 
   const isCurrentUser = message.senderId === currentUser.id;
@@ -289,6 +289,7 @@ const MessageItem: React.FC<MessageItemProps> = ({
     return (
       <div className="mt-3">
         <button
+          type="button"
           onClick={() => onDataRequest(message.dataRequest)}
           className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
         >
@@ -299,22 +300,51 @@ const MessageItem: React.FC<MessageItemProps> = ({
     );
   };
 
+  // Handle emoji picker toggle
+  const toggleEmojiPicker = React.useCallback(() => {
+    setShowEmojiPicker(!showEmojiPicker);
+  }, [showEmojiPicker]);
+
+  // Make toggleEmojiPicker available globally for onclick handlers
+  React.useEffect(() => {
+    (window as any).toggleEmojiPicker = toggleEmojiPicker;
+    return () => {
+      delete (window as any).toggleEmojiPicker;
+    };
+  }, [toggleEmojiPicker]);
+
+  // Render emoji picker
+  const renderEmojiPicker = () => {
+    if (!showEmojiPicker || !enableReactions || isCurrentUser) return null;
+
+    const emojis = ['😀', '👍', '❤️', '😂', '😮', '😢', '😡'];
+
+    return (
+      <div className="absolute top-2 right-2 bg-dark-900/95 backdrop-blur-sm border border-dark-600/50 rounded-lg shadow-xl p-2 flex space-x-1 z-10">
+        {emojis.map((emoji) => (
+          <button
+            key={emoji}
+            type="button"
+            onClick={() => {
+              onReaction?.(message.id!, emoji);
+              setShowEmojiPicker(false);
+            }}
+            className="w-8 h-8 flex items-center justify-center hover:bg-dark-700/50 rounded transition-colors text-lg"
+            title={`React with ${emoji}`}
+          >
+            {emoji}
+          </button>
+        ))}
+      </div>
+    );
+  };
+
   // Render message actions
   const renderActions = () => {
     if (!showActions) return null;
 
     return (
       <div className="absolute top-0 right-0 -mt-2 -mr-2 bg-dark-800 border border-dark-600 rounded-lg shadow-lg p-1 flex space-x-1">
-        {enableReactions && (
-          <button
-            type="button"
-            onClick={() => onReaction?.(message.id!, '❤️')}
-            className="p-1 hover:bg-dark-700 rounded text-dark-400 hover:text-red-400 transition-colors"
-            title="React with heart"
-          >
-            <Heart size={14} />
-          </button>
-        )}
         {enableReplies && (
           <button
             type="button"
@@ -359,8 +389,16 @@ const MessageItem: React.FC<MessageItemProps> = ({
       role="region"
       aria-label={`Message from ${senderName}`}
       className={messageClasses}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
+      onMouseEnter={() => {
+        setShowActions(true);
+        if (!isCurrentUser && enableReactions) {
+          setShowEmojiPicker(true);
+        }
+      }}
+      onMouseLeave={() => {
+        setShowActions(false);
+        setShowEmojiPicker(false);
+      }}
     >
       <div className="flex items-start space-x-3">
         {/* Avatar */}
@@ -423,6 +461,9 @@ const MessageItem: React.FC<MessageItemProps> = ({
         {/* Current user avatar */}
         {isCurrentUser && <div className="flex-shrink-0">{renderAvatar()}</div>}
       </div>
+
+      {/* Emoji Picker */}
+      {renderEmojiPicker()}
 
       {/* Actions */}
       {renderActions()}

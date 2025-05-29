@@ -225,6 +225,90 @@
         let currentUser = demoUsers.user1;
         let chatComponent = null;
 
+        // Configurable emoji reactions (can be modified to customize available emojis)
+        // To add/remove emojis, edit this array with { emoji: '🎉', name: 'celebration' } format
+        const REACTION_EMOJIS = [
+            { emoji: '👍', name: 'thumbs up' },
+            { emoji: '❤️', name: 'heart' },
+            { emoji: '😂', name: 'laughing' },
+            { emoji: '😮', name: 'surprised' },
+            { emoji: '😢', name: 'sad' },
+            { emoji: '😡', name: 'angry' },
+            { emoji: '👀', name: 'eyes' },
+            { emoji: '🙏', name: 'high five' },
+            { emoji: '🎯', name: 'dart' },
+            { emoji: '💯', name: '100' },
+            { emoji: '🤷', name: 'shrug' }
+        ];
+
+        // Generate emoji picker buttons
+        function getEmojiPickerButtons(messageId) {
+            return REACTION_EMOJIS.map(({ emoji, name }) => 
+                `<button class="emoji-option" onclick="addReaction('${messageId}', '${emoji}')" title="${name}">${emoji}</button>`
+            ).join('');
+        }
+
+        // Input emoji picker functions (defined early to be available for onclick handlers)
+        window.toggleInputEmojiPicker = function(button) {
+            console.log('🎭 HTML BASIC: Emoji picker toggle clicked!');
+            const picker = document.getElementById('emojiInputPicker');
+            console.log('🎭 HTML BASIC: Picker element found:', !!picker);
+            if (!picker) return; // Not ready yet
+            
+            const isActive = picker.classList.contains('active');
+            console.log('🎭 HTML BASIC: Picker is currently active:', isActive);
+            
+            // Close all other pickers
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Toggle this picker
+            picker.classList.toggle('active', !isActive);
+            console.log('🎭 HTML BASIC: After toggle, picker classes:', picker.className);
+            console.log('🎭 HTML BASIC: Picker display style:', window.getComputedStyle(picker).display);
+            
+            // Close picker when clicking outside
+            if (!isActive) {
+                setTimeout(() => {
+                    const closeHandler = (e) => {
+                        if (!button.contains(e.target) && !picker.contains(e.target)) {
+                            picker.classList.remove('active');
+                            document.removeEventListener('click', closeHandler);
+                        }
+                    };
+                    document.addEventListener('click', closeHandler);
+                }, 10);
+            }
+        }
+        
+        window.insertEmoji = function(emoji) {
+            const messageInput = document.getElementById('messageInput');
+            if (!messageInput) return; // Not ready yet
+            
+            const start = messageInput.selectionStart;
+            const end = messageInput.selectionEnd;
+            const text = messageInput.value;
+            
+            // Insert emoji at cursor position
+            messageInput.value = text.substring(0, start) + emoji + text.substring(end);
+            
+            // Move cursor after inserted emoji
+            const newPos = start + emoji.length;
+            messageInput.setSelectionRange(newPos, newPos);
+            messageInput.focus();
+            
+            // Close emoji picker
+            const picker = document.getElementById('emojiInputPicker');
+            if (picker) picker.classList.remove('active');
+            
+            // Update input wrapper styling
+            const inputWrapper = document.querySelector('.message-input-wrapper');
+            if (inputWrapper && messageInput.value.trim()) {
+                inputWrapper.classList.add('has-content');
+            }
+        }
+
         // Firebase configuration (using emulator)
         const firebaseConfig = {
             apiKey: 'demo-key',
@@ -300,7 +384,12 @@
                     <div class="message-input-container">
                         <div class="message-input-wrapper">
                             <input type="text" id="messageInput" placeholder="Message #basic-chat" />
+                            <button class="emoji-input-trigger" onclick="toggleInputEmojiPicker(this)" title="Add emoji">😊</button>
                             <button class="send-button" onclick="sendMessage()">Send</button>
+                            <div class="mention-autocomplete" id="mentionAutocomplete"></div>
+                            <div class="emoji-input-picker" id="emojiInputPicker">
+                                <!-- Emoji buttons will be populated by JavaScript -->
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -373,6 +462,7 @@
                     font-weight: 600;
                     font-size: 14px;
                     cursor: pointer;
+                    z-index: 200;
                 }
                 .message-avatar.agent {
                     background: #57f287;
@@ -414,6 +504,10 @@
                     margin-top: 4px;
                     display: flex;
                     gap: 4px;
+                }
+                
+                .message-reactions:empty {
+                    display: none;
                 }
                 .reaction {
                     background: #40444b;
@@ -465,6 +559,7 @@
                     align-items: center;
                     gap: 12px;
                     min-height: 22px;
+                    position: relative;
                 }
                 #messageInput {
                     flex: 1;
@@ -498,6 +593,102 @@
                 }
                 .send-button:hover {
                     background: #4752c4;
+                }
+                
+                .emoji-input-trigger {
+                    background: transparent;
+                    border: none;
+                    color: #72767d;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    transition: all 0.2s;
+                }
+                
+                .emoji-input-trigger:hover {
+                    background: #4f535c;
+                    color: #dcddde;
+                }
+                
+                .emoji-input-picker {
+                    position: absolute;
+                    bottom: 100%;
+                    right: 0px;
+                    margin-bottom: 8px;
+                    background: #36393f;
+                    border: 1px solid #40444b;
+                    border-radius: 8px;
+                    padding: 8px;
+                    display: none;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    z-index: 9999;
+                    white-space: nowrap;
+                    max-width: 300px;
+                    flex-wrap: wrap;
+                }
+                
+                .emoji-input-picker.active {
+                    display: flex;
+                    gap: 4px;
+                }
+                
+                /* Mention autocomplete styles */
+                .mention-autocomplete {
+                    position: absolute;
+                    bottom: 100%;
+                    left: 0;
+                    right: 0;
+                    margin-bottom: 8px;
+                    background: #36393f;
+                    border: 1px solid #40444b;
+                    border-radius: 8px;
+                    display: none;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    z-index: 9999;
+                    max-height: 200px;
+                    overflow-y: auto;
+                }
+                
+                .mention-autocomplete.active {
+                    display: block;
+                }
+                
+                .mention-option {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 8px 12px;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                
+                .mention-option:hover,
+                .mention-option.selected {
+                    background: #4f535c;
+                }
+                
+                .mention-avatar {
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    background: #5865f2;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    color: white;
+                    font-size: 10px;
+                    font-weight: 600;
+                }
+                
+                .mention-avatar.agent {
+                    background: #57f287;
+                    color: #000;
+                }
+                
+                .mention-username {
+                    color: #dcddde;
+                    font-size: 14px;
                 }
                 
                 /* Lightbox Styles */
@@ -556,6 +747,191 @@
                     background: rgba(255, 255, 255, 0.2);
                 }
                 
+                /* Discord-style message interactions */
+                .message-group {
+                    position: relative;
+                }
+
+                .message {
+                    position: relative;
+                }
+                
+                .message:hover > .floating-actions {
+                    opacity: 1;
+                    visibility: visible;
+                }
+                
+                .floating-actions {
+                    position: absolute;
+                    top: 8px;
+                    right: 16px;
+                    background: #36393f;
+                    border: 1px solid #40444b;
+                    border-radius: 8px;
+                    padding: 4px;
+                    opacity: 0;
+                    visibility: hidden;
+                    transition: all 0.2s ease;
+                    z-index: 200;
+                    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+                }
+                
+                
+                .emoji-trigger {
+                    background: transparent;
+                    border: none;
+                    color: #b9bbbe;
+                    cursor: pointer;
+                    padding: 4px 8px;
+                    border-radius: 4px;
+                    font-size: 16px;
+                    transition: all 0.2s;
+                }
+                
+                .emoji-trigger:hover {
+                    background: #4f535c;
+                    color: #dcddde;
+                }
+                
+                .emoji-picker {
+                    position: absolute;
+                    top: 0;
+                    right: 100%;
+                    margin-right: 8px;
+                    background: #36393f;
+                    border: 1px solid #40444b;
+                    border-radius: 8px;
+                    padding: 8px;
+                    display: none;
+                    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+                    z-index: 1000;
+                    white-space: nowrap;
+                }
+                
+                .emoji-picker.active {
+                    display: flex;
+                    gap: 4px;
+                }
+                
+                .emoji-option {
+                    background: transparent;
+                    border: none;
+                    font-size: 18px;
+                    padding: 4px 6px;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    transition: background 0.2s;
+                }
+                
+                .emoji-option:hover {
+                    background: #4f535c;
+                }
+                
+                .message-content.editing {
+                    background: #40444b;
+                    border-radius: 4px;
+                    padding: 8px;
+                    margin: -4px;
+                }
+                
+                .edit-input {
+                    background: transparent;
+                    border: none;
+                    color: #dcddde;
+                    font-size: 1rem;
+                    line-height: 1.375rem;
+                    width: 100%;
+                    outline: none;
+                    font-family: inherit;
+                    resize: none;
+                }
+                
+                .edit-controls {
+                    margin-top: 8px;
+                    font-size: 11px;
+                    color: #72767d;
+                }
+                
+                .message-edited {
+                    font-size: 10px;
+                    color: #72767d;
+                    margin-left: 4px;
+                    font-style: italic;
+                }
+                
+                .mention {
+                    background: #3b82f6;
+                    color: white;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    font-weight: 500;
+                }
+                
+                .mention.self-mention {
+                    background: #f59e0b;
+                    color: #1f2937;
+                    animation: mentionPulse 2s ease-in-out;
+                }
+                
+                @keyframes mentionPulse {
+                    0%, 100% { transform: scale(1); }
+                    50% { transform: scale(1.05); }
+                }
+                
+                .file-attachment {
+                    display: flex;
+                    align-items: center;
+                    background: #40444b;
+                    border: 1px solid #4f535c;
+                    border-radius: 8px;
+                    padding: 12px;
+                    margin: 8px 0;
+                    cursor: pointer;
+                    transition: all 0.2s ease;
+                    max-width: 300px;
+                }
+                
+                .file-attachment:hover {
+                    background: #4f535c;
+                    border-color: #5865f2;
+                }
+                
+                .file-icon {
+                    font-size: 24px;
+                    margin-right: 12px;
+                    opacity: 0.8;
+                }
+                
+                .file-info {
+                    flex: 1;
+                    min-width: 0;
+                }
+                
+                .file-name {
+                    color: #dcddde;
+                    font-weight: 500;
+                    font-size: 14px;
+                    margin-bottom: 2px;
+                    word-break: break-word;
+                }
+                
+                .file-type {
+                    color: #b9bbbe;
+                    font-size: 12px;
+                    text-transform: uppercase;
+                }
+                
+                .message.own-message .message-content {
+                    cursor: pointer;
+                }
+                
+                .message.own-message .message-content:hover {
+                    background: rgba(114, 118, 125, 0.1);
+                    border-radius: 4px;
+                    margin: -2px;
+                    padding: 2px;
+                }
+                
                 .message-image {
                     max-width: 300px;
                     max-height: 200px;
@@ -572,26 +948,22 @@
             `;
             document.head.appendChild(style);
 
+            // Populate emoji input picker
+            const emojiInputPicker = document.getElementById('emojiInputPicker');
+            emojiInputPicker.innerHTML = REACTION_EMOJIS.map(({ emoji, name }) => 
+                `<button class="emoji-option" onclick="insertEmoji('${emoji}')" title="${name}">${emoji}</button>`
+            ).join('');
+
             // Add message input handlers
             const messageInput = document.getElementById('messageInput');
             const inputWrapper = document.querySelector('.message-input-wrapper');
             
-            messageInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    sendMessage();
-                }
-            });
-            
-            messageInput.addEventListener('input', function() {
-                if (this.value.trim()) {
-                    inputWrapper.classList.add('has-content');
-                } else {
-                    inputWrapper.classList.remove('has-content');
-                }
-            });
+            messageInput.addEventListener('keypress', handleInputKeypress);
+            messageInput.addEventListener('input', handleMentionAutocomplete);
         }
 
+        let messageIdCounter = 0;
+        
         function addMessage(content, sender = null) {
             const messagesContainer = document.getElementById('messages');
             if (!messagesContainer) return;
@@ -599,6 +971,8 @@
             const user = sender || currentUser;
             const now = new Date();
             const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const messageId = `msg-${++messageIdCounter}`;
+            const isOwnMessage = user.id === currentUser.id;
             
             // Process content for images
             const processedContent = processMessageContent(content);
@@ -612,10 +986,23 @@
             if (shouldGroup) {
                 // Add to existing group
                 const messageEl = document.createElement('div');
-                messageEl.className = 'message';
+                messageEl.className = `message ${isOwnMessage ? 'own-message' : ''}`;
+                messageEl.dataset.messageId = messageId;
                 messageEl.innerHTML = `
-                    <div class="message-content">${processedContent}</div>
+                    <div class="message-content" ${isOwnMessage ? `onclick="startEdit('${messageId}')"` : ''}>${processedContent}</div>
+                    <div class="message-reactions"></div>
                 `;
+                
+                // Add floating actions to each individual message (not just group)
+                const floatingActionsEl = document.createElement('div');
+                floatingActionsEl.className = 'floating-actions';
+                floatingActionsEl.innerHTML = `
+                    <button class="emoji-trigger" onclick="toggleEmojiPicker(this)">😊</button>
+                    <div class="emoji-picker">
+                        ${getEmojiPickerButtons(messageId)}
+                    </div>
+                `;
+                messageEl.appendChild(floatingActionsEl);
                 lastMessage.appendChild(messageEl);
             } else {
                 // Create new message group
@@ -629,15 +1016,18 @@
                 
                 messageGroupEl.innerHTML = `
                     <div class="message-avatar ${avatarClass}">${initials}</div>
-                    <div class="message">
+                    <div class="message ${isOwnMessage ? 'own-message' : ''}" data-message-id="${messageId}">
                         <div class="message-header">
                             <span class="message-username ${usernameClass}">${user.displayName}</span>
                             <span class="message-timestamp">${timestamp}</span>
                         </div>
-                        <div class="message-content">${processedContent}</div>
-                        <div class="message-reactions">
-                            <div class="reaction" onclick="toggleReaction(this, '👍')">👍 <span>1</span></div>
-                            <div class="reaction" onclick="toggleReaction(this, '😊')">😊</div>
+                        <div class="message-content" ${isOwnMessage ? `onclick="startEdit('${messageId}')"` : ''}>${processedContent}</div>
+                        <div class="message-reactions"></div>
+                        <div class="floating-actions">
+                            <button class="emoji-trigger" onclick="toggleEmojiPicker(this)">😊</button>
+                            <div class="emoji-picker">
+                                ${getEmojiPickerButtons(messageId)}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -646,17 +1036,60 @@
             }
             
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Store original content for editing
+            if (isOwnMessage) {
+                const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageEl) {
+                    messageEl.dataset.originalContent = content;
+                }
+            }
         }
 
         function processMessageContent(content) {
-            // Simple regex to detect image URLs
-            const imageRegex = /https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^\s]*)?/gi;
+            // Enhanced regex to detect image URLs including services like picsum.photos
+            const imageRegex = /https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp)(?:\?[^\s]*)?|https?:\/\/picsum\.photos\/[^\s]*/gi;
             
-            return content.replace(imageRegex, (imageUrl) => {
+            let processedContent = content.replace(imageRegex, (imageUrl) => {
                 return `<img src="${imageUrl}" class="message-image" onclick="openLightbox('${imageUrl}')" alt="Shared image">`;
             });
+            
+            // Process file attachments (detect common file patterns)
+            const fileRegex = /([^\s]+\.(?:pdf|doc|docx|txt|md|json|csv|xlsx|ppt|pptx|zip|rar))/gi;
+            processedContent = processedContent.replace(fileRegex, (match, filename) => {
+                // Extract just the filename without path
+                const displayName = filename.split('/').pop();
+                return `<div class="file-attachment" onclick="downloadFile('${filename}')">
+                    <div class="file-icon">📄</div>
+                    <div class="file-info">
+                        <div class="file-name">${displayName}</div>
+                        <div class="file-type">${filename.split('.').pop().toUpperCase()}</div>
+                    </div>
+                </div>`;
+            });
+            
+            // Process @mentions with highlighting for current user
+            processedContent = processedContent.replace(/@(\w+)/g, (match, username) => {
+                const isSelfMention = username.toLowerCase() === currentUser.displayName.toLowerCase().replace(/\s+/g, '') ||
+                                      username.toLowerCase() === currentUser.id.toLowerCase();
+                return `<span class="mention ${isSelfMention ? 'self-mention' : ''}">@${username}</span>`;
+            });
+            
+            return processedContent;
         }
 
+        // File download function
+        function downloadFile(filename) {
+            // Create a temporary link to trigger download
+            const link = document.createElement('a');
+            link.href = filename;
+            link.download = filename.split('/').pop();
+            link.target = '_blank';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
         // Lightbox functions
         function openLightbox(imageSrc) {
             const lightbox = document.getElementById('lightbox');
@@ -684,7 +1117,70 @@
             }
         });
 
-        function toggleReaction(reactionEl, emoji) {
+
+        window.toggleEmojiPicker = function(button) {
+            const picker = button.nextElementSibling;
+            const isActive = picker.classList.contains('active');
+            
+            // Close all other pickers
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                if (p !== picker) p.classList.remove('active');
+            });
+            
+            // Toggle this picker
+            picker.classList.toggle('active', !isActive);
+            
+            // Close picker when clicking outside
+            if (!isActive) {
+                setTimeout(() => {
+                    const closeHandler = (e) => {
+                        if (!button.contains(e.target) && !picker.contains(e.target)) {
+                            picker.classList.remove('active');
+                            document.removeEventListener('click', closeHandler);
+                        }
+                    };
+                    document.addEventListener('click', closeHandler);
+                }, 10);
+            }
+        }
+        
+        window.addReaction = function(messageId, emoji) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageEl) return;
+            
+            const reactionsContainer = messageEl.querySelector('.message-reactions');
+            if (!reactionsContainer) return;
+            
+            // Check if reaction already exists
+            const existingReaction = Array.from(reactionsContainer.children).find(r => 
+                r.textContent.includes(emoji)
+            );
+            
+            if (existingReaction) {
+                // Increment count
+                const countSpan = existingReaction.querySelector('span');
+                if (countSpan) {
+                    const count = parseInt(countSpan.textContent) || 0;
+                    countSpan.textContent = count + 1;
+                } else {
+                    existingReaction.innerHTML = `${emoji} <span>2</span>`;
+                }
+            } else {
+                // Add new reaction
+                const reactionEl = document.createElement('div');
+                reactionEl.className = 'reaction';
+                reactionEl.innerHTML = `${emoji} <span>1</span>`;
+                reactionEl.onclick = () => toggleReaction(reactionEl, emoji);
+                reactionsContainer.appendChild(reactionEl);
+            }
+            
+            // Close emoji picker
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                p.classList.remove('active');
+            });
+        }
+        
+        window.toggleReaction = function(reactionEl, emoji) {
             const countSpan = reactionEl.querySelector('span');
             if (countSpan) {
                 const count = parseInt(countSpan.textContent) || 0;
@@ -696,6 +1192,70 @@
             } else {
                 reactionEl.innerHTML = `${emoji} <span>1</span>`;
             }
+        }
+        
+        window.startEdit = function(messageId) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageEl) return;
+            
+            const contentEl = messageEl.querySelector('.message-content');
+            const originalContent = messageEl.dataset.originalContent || contentEl.textContent;
+            
+            if (contentEl.classList.contains('editing')) return;
+            
+            contentEl.classList.add('editing');
+            contentEl.innerHTML = `
+                <textarea class="edit-input" rows="1">${originalContent}</textarea>
+                <div class="edit-controls">
+                    Press Enter to save, Escape to cancel
+                </div>
+            `;
+            
+            const textarea = contentEl.querySelector('.edit-input');
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            
+            // Auto-resize textarea
+            const autoResize = () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            };
+            autoResize();
+            textarea.addEventListener('input', autoResize);
+            
+            const saveEdit = () => {
+                const newContent = textarea.value.trim();
+                if (newContent && newContent !== originalContent) {
+                    const processedContent = processMessageContent(newContent);
+                    contentEl.innerHTML = processedContent + '<span class="message-edited">(edited)</span>';
+                    messageEl.dataset.originalContent = newContent;
+                } else {
+                    contentEl.innerHTML = processMessageContent(originalContent);
+                }
+                contentEl.classList.remove('editing');
+                contentEl.onclick = () => startEdit(messageId);
+            };
+            
+            const cancelEdit = () => {
+                contentEl.innerHTML = processMessageContent(originalContent);
+                contentEl.classList.remove('editing');
+                contentEl.onclick = () => startEdit(messageId);
+            };
+            
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                }
+            });
+            
+            textarea.addEventListener('blur', saveEdit);
+            
+            // Remove onclick temporarily
+            contentEl.onclick = null;
         }
 
         function sendMessage() {
@@ -733,8 +1293,48 @@
                 userDisplay.textContent = currentUser.displayName;
             }
             
+            // Re-evaluate existing messages for floating actions
+            updateExistingMessagesForUser();
+            
             console.log('Switched to user:', currentUser.displayName);
         };
+
+        function updateExistingMessagesForUser() {
+            // Get all message groups
+            const messageGroups = document.querySelectorAll('.message-group');
+            
+            messageGroups.forEach(group => {
+                const userId = group.dataset.userId;
+                const isOwnMessage = userId === currentUser.id;
+                const message = group.querySelector('.message');
+                
+                // Update message classes
+                if (message) {
+                    if (isOwnMessage) {
+                        message.classList.add('own-message');
+                    } else {
+                        message.classList.remove('own-message');
+                    }
+                }
+                
+                // Ensure floating actions exist for all messages
+                let existingActions = group.querySelector('.floating-actions');
+                if (!existingActions) {
+                    const messageEl = group.querySelector('[data-message-id]');
+                    const messageId = messageEl ? messageEl.dataset.messageId : '';
+                    
+                    const floatingActionsHtml = `
+                        <div class="floating-actions">
+                            <button class="emoji-trigger" onclick="toggleEmojiPicker(this)">😊</button>
+                            <div class="emoji-picker">
+                                ${getEmojiPickerButtons(messageId)}
+                            </div>
+                        </div>
+                    `;
+                    messageEl.insertAdjacentHTML('beforeend', floatingActionsHtml);
+                }
+            });
+        }
 
         window.sendQuickMessage = function(message) {
             addMessage(message);
@@ -772,6 +1372,153 @@
             addMessage(randomMessage, demoUsers.ai_assistant);
             console.log('AI sent mention:', randomMessage);
         };
+
+        // Mention autocomplete functionality
+        let mentionState = {
+            isActive: false,
+            startPos: -1,
+            selectedIndex: 0,
+            filteredUsers: []
+        };
+
+        function handleInputKeypress(e) {
+            const input = e.target;
+            const autocomplete = document.getElementById('mentionAutocomplete');
+            
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (mentionState.isActive && mentionState.filteredUsers.length > 0) {
+                    e.preventDefault();
+                    selectMention(mentionState.selectedIndex);
+                    return;
+                }
+                e.preventDefault();
+                sendMessage();
+            } else if (e.key === 'Escape') {
+                hideMentionAutocomplete();
+            } else if (mentionState.isActive) {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    mentionState.selectedIndex = Math.max(0, mentionState.selectedIndex - 1);
+                    updateMentionSelection();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    mentionState.selectedIndex = Math.min(mentionState.filteredUsers.length - 1, mentionState.selectedIndex + 1);
+                    updateMentionSelection();
+                } else if (e.key === 'Tab') {
+                    e.preventDefault();
+                    selectMention(mentionState.selectedIndex);
+                }
+            }
+        }
+
+        function handleMentionAutocomplete(e) {
+            console.log('💬 HTML BASIC: handleMentionAutocomplete called with:', e.target.value);
+            const input = e.target;
+            const inputWrapper = input.closest('.message-input-wrapper');
+            
+            // Handle input has content styling
+            if (input.value.trim()) {
+                inputWrapper.classList.add('has-content');
+            } else {
+                inputWrapper.classList.remove('has-content');
+            }
+            
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+            console.log('💬 HTML BASIC: text:', text, 'cursorPos:', cursorPos);
+            
+            // Find @ symbol before cursor
+            let atPos = -1;
+            for (let i = cursorPos - 1; i >= 0; i--) {
+                if (text[i] === '@') {
+                    atPos = i;
+                    break;
+                } else if (text[i] === ' ' || text[i] === '\n') {
+                    break;
+                }
+            }
+            
+            if (atPos >= 0) {
+                const query = text.slice(atPos + 1, cursorPos).toLowerCase();
+                const users = Object.values(demoUsers).filter(user => 
+                    user.id !== currentUser.id && 
+                    (user.displayName.toLowerCase().includes(query) || 
+                     user.id.toLowerCase().includes(query))
+                );
+                
+                if (users.length > 0) {
+                    showMentionAutocomplete(users, atPos);
+                } else {
+                    hideMentionAutocomplete();
+                }
+            } else {
+                hideMentionAutocomplete();
+            }
+        }
+
+        function showMentionAutocomplete(users, startPos) {
+            console.log('🔍 HTML BASIC: showMentionAutocomplete called with users:', users.length, 'startPos:', startPos);
+            mentionState.isActive = true;
+            mentionState.startPos = startPos;
+            mentionState.filteredUsers = users;
+            mentionState.selectedIndex = 0;
+            
+            const autocomplete = document.getElementById('mentionAutocomplete');
+            autocomplete.innerHTML = users.map((user, index) => {
+                const initials = user.displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
+                const avatarClass = user.isAgent ? 'agent' : '';
+                return `
+                    <div class="mention-option ${index === 0 ? 'selected' : ''}" onclick="selectMention(${index})">
+                        <div class="mention-avatar ${avatarClass}">${initials}</div>
+                        <div class="mention-username">${user.displayName}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            autocomplete.classList.add('active');
+            console.log('🔍 HTML BASIC: Autocomplete element display style after adding active class:', window.getComputedStyle(autocomplete).display);
+        }
+
+        function hideMentionAutocomplete() {
+            mentionState.isActive = false;
+            mentionState.startPos = -1;
+            mentionState.selectedIndex = 0;
+            mentionState.filteredUsers = [];
+            
+            const autocomplete = document.getElementById('mentionAutocomplete');
+            autocomplete.classList.remove('active');
+        }
+
+        function updateMentionSelection() {
+            const options = document.querySelectorAll('.mention-option');
+            options.forEach((option, index) => {
+                if (index === mentionState.selectedIndex) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+
+        window.selectMention = function(index) {
+            if (!mentionState.isActive || index >= mentionState.filteredUsers.length) return;
+            
+            const user = mentionState.filteredUsers[index];
+            const input = document.getElementById('messageInput');
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+            
+            // Replace the partial mention with the full username
+            const beforeMention = text.slice(0, mentionState.startPos);
+            const afterMention = text.slice(cursorPos);
+            const newText = beforeMention + `@${user.displayName} ` + afterMention;
+            
+            input.value = newText;
+            input.selectionStart = input.selectionEnd = beforeMention.length + user.displayName.length + 2;
+            
+            hideMentionAutocomplete();
+            input.focus();
+        }
 
         // Initialize when page loads
         document.addEventListener('DOMContentLoaded', initializeChat);

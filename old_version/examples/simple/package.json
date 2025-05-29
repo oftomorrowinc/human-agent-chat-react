@@ -1,7 +1,0 @@
-{
-  "name": "simple-example",
-  "version": "1.0.0",
-  "description": "Simple example for human-agent-chat",
-  "type": "module",
-  "main": "server.js"
-}

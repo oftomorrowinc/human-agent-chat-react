@@ -15,7 +15,7 @@ interface FormModalProps {
 const FormModal: React.FC<FormModalProps> = ({
   isOpen,
   onClose,
-  schema,
+  schema: _schema,
   onSubmit,
   title = 'Form',
   description,

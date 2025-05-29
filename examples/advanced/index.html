@@ -340,6 +340,7 @@
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
+            z-index: 200;
         }
         
         .message-avatar.agent {
@@ -595,6 +596,7 @@
             align-items: center;
             gap: 12px;
             min-height: 22px;
+            position: relative;
         }
         
         .message-input {
@@ -640,6 +642,102 @@
         .send-button:disabled {
             background: #4f545c;
             cursor: not-allowed;
+        }
+        
+        .emoji-input-trigger {
+            background: transparent;
+            border: none;
+            color: #72767d;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+        
+        .emoji-input-trigger:hover {
+            background: #4a5568;
+            color: #f1f5f9;
+        }
+        
+        .emoji-input-picker {
+            position: absolute;
+            bottom: 100%;
+            right: 0px;
+            margin-bottom: 8px;
+            background: #2f3349;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 8px;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            white-space: nowrap;
+            max-width: 300px;
+            flex-wrap: wrap;
+        }
+        
+        .emoji-input-picker.active {
+            display: flex;
+            gap: 4px;
+        }
+        
+        /* Mention autocomplete styles */
+        .mention-autocomplete {
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            right: 0;
+            margin-bottom: 8px;
+            background: #2f3349;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .mention-autocomplete.active {
+            display: block;
+        }
+        
+        .mention-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .mention-option:hover,
+        .mention-option.selected {
+            background: #4a5568;
+        }
+        
+        .mention-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: #5865f2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .mention-avatar.agent {
+            background: #57f287;
+            color: #000;
+        }
+        
+        .mention-username {
+            color: #f1f5f9;
+            font-size: 14px;
         }
         
         .input-controls {
@@ -943,6 +1041,146 @@
             text-align: center;
             z-index: 10001;
         }
+
+        /* Emoji Picker Styles */
+        .message-group {
+            position: relative;
+        }
+
+        .message {
+            position: relative;
+        }
+
+        .floating-actions {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #2f3349;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 4px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            z-index: 200;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .message:hover > .floating-actions {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .emoji-trigger {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .emoji-trigger:hover {
+            background: #4a5568;
+            color: #f1f5f9;
+        }
+
+        .emoji-picker {
+            position: absolute;
+            top: 0;
+            right: 100%;
+            margin-right: 8px;
+            background: #2f3349;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 8px;
+            display: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            white-space: nowrap;
+        }
+
+        .emoji-picker.active {
+            display: flex;
+            gap: 4px;
+        }
+
+        .emoji-option {
+            background: transparent;
+            border: none;
+            font-size: 18px;
+            padding: 4px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .emoji-option:hover {
+            background: #4a5568;
+        }
+
+        /* Edit Input Styling */
+        .message-text.editing {
+            background: #40444b;
+            border-radius: 8px;
+            padding: 11px 16px;
+            margin: -8px;
+        }
+
+        .edit-input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #dcddde;
+            font-size: 16px;
+            line-height: 1.375rem;
+            resize: none;
+            outline: none;
+            font-family: inherit;
+            min-height: 22px;
+            max-height: 120px;
+        }
+
+        .edit-input::placeholder {
+            color: #72767d;
+        }
+
+        .edit-controls {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #72767d;
+            opacity: 0.8;
+        }
+
+        .message-edited {
+            font-size: 10px;
+            color: #72767d;
+            margin-left: 4px;
+            font-style: italic;
+            opacity: 0.7;
+        }
+
+        /* Mention highlighting */
+        .mention {
+            background: #3b82f6;
+            color: white;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .mention.self-mention {
+            background: #f59e0b;
+            color: #1f2937;
+            animation: mentionPulse 2s ease-in-out;
+        }
+
+        @keyframes mentionPulse {
+            0%, 100% { background: #f59e0b; }
+            50% { background: #fbbf24; }
+        }
     </style>
 </head>
 <body>
@@ -1239,6 +1477,238 @@
         let lastFormSchema = null;
         let messageIdCounter = 0;
 
+        // Configurable emoji reactions (can be modified to customize available emojis)
+        // To add/remove emojis, edit this array with { emoji: '🎉', name: 'celebration' } format
+        const REACTION_EMOJIS = [
+            { emoji: '👍', name: 'thumbs up' },
+            { emoji: '❤️', name: 'heart' },
+            { emoji: '😂', name: 'laughing' },
+            { emoji: '😮', name: 'surprised' },
+            { emoji: '😢', name: 'sad' },
+            { emoji: '😡', name: 'angry' },
+            { emoji: '👀', name: 'eyes' },
+            { emoji: '🙏', name: 'high five' },
+            { emoji: '🎯', name: 'dart' },
+            { emoji: '💯', name: '100' },
+            { emoji: '🤷', name: 'shrug' }
+        ];
+
+        // Generate emoji picker buttons
+        function getEmojiPickerButtons(messageId) {
+            return REACTION_EMOJIS.map(({ emoji, name }) => 
+                `<button class="emoji-option" onclick="addReaction('${messageId}', '${emoji}')" title="${name}">${emoji}</button>`
+            ).join('');
+        }
+
+        // Input emoji picker functions (defined early to be available for onclick handlers)
+        window.toggleInputEmojiPicker = function(button) {
+            console.log('🎭 HTML ADVANCED: Emoji picker toggle clicked!');
+            const picker = document.getElementById('emojiInputPicker');
+            console.log('🎭 HTML ADVANCED: Picker element found:', !!picker);
+            if (!picker) return; // Not ready yet
+            
+            const isActive = picker.classList.contains('active');
+            console.log('🎭 HTML ADVANCED: Picker is currently active:', isActive);
+            
+            // Close all other pickers
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Toggle this picker
+            picker.classList.toggle('active', !isActive);
+            console.log('🎭 HTML ADVANCED: After toggle, picker classes:', picker.className);
+            console.log('🎭 HTML ADVANCED: Picker display style:', window.getComputedStyle(picker).display);
+            
+            // Close picker when clicking outside
+            if (!isActive) {
+                setTimeout(() => {
+                    const closeHandler = (e) => {
+                        if (!button.contains(e.target) && !picker.contains(e.target)) {
+                            picker.classList.remove('active');
+                            document.removeEventListener('click', closeHandler);
+                        }
+                    };
+                    document.addEventListener('click', closeHandler);
+                }, 10);
+            }
+        }
+        
+        window.insertEmoji = function(emoji) {
+            const messageInput = document.getElementById('messageInput');
+            if (!messageInput) return; // Not ready yet
+            
+            const start = messageInput.selectionStart;
+            const end = messageInput.selectionEnd;
+            const text = messageInput.value;
+            
+            // Insert emoji at cursor position
+            messageInput.value = text.substring(0, start) + emoji + text.substring(end);
+            
+            // Move cursor after inserted emoji
+            const newPos = start + emoji.length;
+            messageInput.setSelectionRange(newPos, newPos);
+            messageInput.focus();
+            
+            // Close emoji picker
+            const picker = document.getElementById('emojiInputPicker');
+            if (picker) picker.classList.remove('active');
+            
+            // Update input wrapper styling and auto-resize
+            const inputWrapper = document.querySelector('.message-input-wrapper');
+            if (inputWrapper && messageInput.value.trim()) {
+                inputWrapper.classList.add('has-content');
+            }
+            
+            // Auto-resize textarea for advanced example
+            if (typeof autoResizeTextarea === 'function') {
+                autoResizeTextarea();
+            }
+        }
+
+        // Mention autocomplete functionality
+        let mentionState = {
+            isActive: false,
+            startPos: -1,
+            selectedIndex: 0,
+            filteredUsers: []
+        };
+
+        function handleInputKeypress(e) {
+            const input = e.target;
+            
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (mentionState.isActive && mentionState.filteredUsers.length > 0) {
+                    e.preventDefault();
+                    selectMention(mentionState.selectedIndex);
+                    return;
+                }
+                // Let the existing sendUserMessage handler work
+            } else if (e.key === 'Escape') {
+                hideMentionAutocomplete();
+            } else if (mentionState.isActive) {
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    mentionState.selectedIndex = Math.max(0, mentionState.selectedIndex - 1);
+                    updateMentionSelection();
+                } else if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    mentionState.selectedIndex = Math.min(mentionState.filteredUsers.length - 1, mentionState.selectedIndex + 1);
+                    updateMentionSelection();
+                } else if (e.key === 'Tab') {
+                    e.preventDefault();
+                    selectMention(mentionState.selectedIndex);
+                }
+            }
+        }
+
+        function handleMentionAutocomplete(e) {
+            console.log('💬 HTML ADVANCED: handleMentionAutocomplete called with:', e.target.value);
+            const input = e.target;
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+            console.log('💬 HTML ADVANCED: text:', text, 'cursorPos:', cursorPos);
+            
+            // Find @ symbol before cursor
+            let atPos = -1;
+            for (let i = cursorPos - 1; i >= 0; i--) {
+                if (text[i] === '@') {
+                    atPos = i;
+                    break;
+                } else if (text[i] === ' ' || text[i] === '\n') {
+                    break;
+                }
+            }
+            
+            if (atPos >= 0) {
+                const query = text.slice(atPos + 1, cursorPos).toLowerCase();
+                const users = Object.values(demoUsers).filter(user => 
+                    user.id !== currentUser.id && 
+                    (user.displayName.toLowerCase().includes(query) || 
+                     user.id.toLowerCase().includes(query))
+                );
+                
+                if (users.length > 0) {
+                    showMentionAutocomplete(users, atPos);
+                } else {
+                    hideMentionAutocomplete();
+                }
+            } else {
+                hideMentionAutocomplete();
+            }
+        }
+
+        function showMentionAutocomplete(users, startPos) {
+            console.log('🔍 HTML ADVANCED: showMentionAutocomplete called with users:', users.length, 'startPos:', startPos);
+            mentionState.isActive = true;
+            mentionState.startPos = startPos;
+            mentionState.filteredUsers = users;
+            mentionState.selectedIndex = 0;
+            
+            const autocomplete = document.getElementById('mentionAutocomplete');
+            autocomplete.innerHTML = users.map((user, index) => {
+                const initials = user.displayName.split(' ').map(n => n[0]).join('').slice(0, 2);
+                const avatarClass = user.isAgent ? 'agent' : '';
+                return `
+                    <div class="mention-option ${index === 0 ? 'selected' : ''}" onclick="selectMention(${index})">
+                        <div class="mention-avatar ${avatarClass}">${initials}</div>
+                        <div class="mention-username">${user.displayName}</div>
+                    </div>
+                `;
+            }).join('');
+            
+            autocomplete.classList.add('active');
+            console.log('🔍 HTML ADVANCED: Autocomplete element display style after adding active class:', window.getComputedStyle(autocomplete).display);
+        }
+
+        function hideMentionAutocomplete() {
+            mentionState.isActive = false;
+            mentionState.startPos = -1;
+            mentionState.selectedIndex = 0;
+            mentionState.filteredUsers = [];
+            
+            const autocomplete = document.getElementById('mentionAutocomplete');
+            autocomplete.classList.remove('active');
+        }
+
+        function updateMentionSelection() {
+            const options = document.querySelectorAll('.mention-option');
+            options.forEach((option, index) => {
+                if (index === mentionState.selectedIndex) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+        }
+
+        window.selectMention = function(index) {
+            if (!mentionState.isActive || index >= mentionState.filteredUsers.length) return;
+            
+            const user = mentionState.filteredUsers[index];
+            const input = document.getElementById('messageInput');
+            const text = input.value;
+            const cursorPos = input.selectionStart;
+            
+            // Replace the partial mention with the full username
+            const beforeMention = text.slice(0, mentionState.startPos);
+            const afterMention = text.slice(cursorPos);
+            const newText = beforeMention + `@${user.displayName} ` + afterMention;
+            
+            input.value = newText;
+            input.selectionStart = input.selectionEnd = beforeMention.length + user.displayName.length + 2;
+            
+            hideMentionAutocomplete();
+            input.focus();
+            
+            // Update input wrapper styling and auto-resize
+            const inputWrapper = document.querySelector('.message-input-wrapper');
+            if (inputWrapper && input.value.trim()) {
+                inputWrapper.classList.add('has-content');
+            }
+            autoResizeTextarea();
+        }
+
         async function initializeChat() {
             try {
                 // Hide loading
@@ -1291,11 +1761,18 @@
                     <div class="message-input-container">
                         <div class="message-input-wrapper">
                             <textarea id="messageInput" class="message-input" placeholder="Message #advanced-chat" rows="1"></textarea>
+                            <button class="emoji-input-trigger" onclick="toggleInputEmojiPicker(this)" title="Add emoji">😊</button>
                             <button id="sendButton" class="send-button" onclick="sendUserMessage()">Send</button>
+                            <div class="mention-autocomplete" id="mentionAutocomplete"></div>
+                            <div class="emoji-input-picker" id="emojiInputPicker">
+                                <!-- Emoji buttons will be populated by JavaScript -->
+                            </div>
                         </div>
                         <div class="input-controls">
-                            <button class="file-upload-button" onclick="simulateFileUpload('image')">📎 Image</button>
-                            <button class="file-upload-button" onclick="simulateFileUpload('document')">📄 File</button>
+                            <input type="file" id="imageUpload" accept="image/*" style="display: none;" onchange="handleFileUpload(this, 'image')">
+                            <input type="file" id="fileUpload" accept="*/*" style="display: none;" onchange="handleFileUpload(this, 'file')">
+                            <button class="file-upload-button" onclick="document.getElementById('imageUpload').click()">📎 Image</button>
+                            <button class="file-upload-button" onclick="document.getElementById('fileUpload').click()">📄 File</button>
                             <span style="font-size: 12px; color: #72767d;">Press Enter to send, Shift+Enter for new line</span>
                         </div>
                     </div>
@@ -1306,21 +1783,34 @@
             const messageInput = document.getElementById('messageInput');
             const inputWrapper = document.querySelector('.message-input-wrapper');
             
-            messageInput.addEventListener('input', function() {
+            messageInput.addEventListener('input', function(e) {
                 autoResizeTextarea();
                 if (this.value.trim()) {
                     inputWrapper.classList.add('has-content');
                 } else {
                     inputWrapper.classList.remove('has-content');
                 }
+                
+                // Handle mention autocomplete
+                handleMentionAutocomplete(e);
             });
             
             messageInput.addEventListener('keydown', function(e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
+                // Handle mention autocomplete navigation first
+                handleInputKeypress(e);
+                
+                // If not handled by mention autocomplete, handle normally
+                if (e.key === 'Enter' && !e.shiftKey && !mentionState.isActive) {
                     e.preventDefault();
                     sendUserMessage();
                 }
             });
+            
+            // Populate emoji input picker
+            const emojiInputPicker = document.getElementById('emojiInputPicker');
+            emojiInputPicker.innerHTML = REACTION_EMOJIS.map(({ emoji, name }) => 
+                `<button class="emoji-option" onclick="insertEmoji('${emoji}')" title="${name}">${emoji}</button>`
+            ).join('');
         }
 
         function autoResizeTextarea() {
@@ -1348,9 +1838,13 @@
                                                                 'Team Member';
             
             // Update chat header
-            const userStatus = document.querySelector('.current-user-status strong');
+            const userStatus = document.querySelector('.current-user-status');
             const userBadge = document.getElementById('user-badge');
-            if (userStatus) userStatus.textContent = user.displayName;
+            if (userStatus) {
+                // Update just the text content, preserving the badge
+                const badgeHtml = userBadge ? userBadge.outerHTML : '';
+                userStatus.innerHTML = `${user.displayName} ${badgeHtml}`;
+            }
             if (userBadge) {
                 userBadge.className = `user-badge ${user.role}`;
                 userBadge.textContent = getRoleBadgeText(user.role);
@@ -1375,6 +1869,7 @@
             const senderUser = Object.values(demoUsers).find(u => u.id === messageData.senderId) || currentUser;
             const isAgent = messageData.fromAiAgent || senderUser.isAgent;
             const isSystem = messageData.senderRole === 'system';
+            const isOwnMessage = messageData.senderId === currentUser.id;
             
             const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             
@@ -1397,19 +1892,31 @@
             // Process mentions in content
             let processedContent = messageData.content;
             if (processedContent.includes('@')) {
-                processedContent = processedContent.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+                processedContent = processedContent.replace(/@(\w+)/g, (match, username) => {
+                    const isSelfMention = username.toLowerCase() === currentUser.displayName.toLowerCase().replace(/\s+/g, '') ||
+                                          username.toLowerCase() === currentUser.id.toLowerCase();
+                    return `<span class="mention ${isSelfMention ? 'self-mention' : ''}">@${username}</span>`;
+                });
             }
 
             if (shouldGroup) {
                 // Add to existing group
                 const messageEl = document.createElement('div');
-                messageEl.className = 'message';
+                messageEl.className = `message ${isOwnMessage ? 'own-message' : ''}`;
                 messageEl.id = messageId;
+                messageEl.dataset.messageId = messageId;
                 messageEl.innerHTML = `
                     <div class="message-content">
-                        ${processedContent}
+                        ${processedContent ? `<div class="message-text" ${isOwnMessage && !messageData.dataRequest ? `onclick="startEdit('${messageId}')"` : ''}>${processedContent}</div>` : ''}
                         ${attachmentsHtml}
                         ${formHtml}
+                    </div>
+                    <div class="message-reactions"></div>
+                    <div class="floating-actions">
+                        <button class="emoji-trigger" onclick="toggleEmojiPicker(this)">😊</button>
+                        <div class="emoji-picker">
+                            ${getEmojiPickerButtons(messageId)}
+                        </div>
                     </div>
                 `;
                 lastMessage.appendChild(messageEl);
@@ -1425,19 +1932,22 @@
                 
                 messageGroupEl.innerHTML = `
                     <div class="message-avatar ${avatarClass}">${avatar}</div>
-                    <div class="message" id="${messageId}">
+                    <div class="message ${isOwnMessage ? 'own-message' : ''}" id="${messageId}" data-message-id="${messageId}">
                         <div class="message-header">
                             <span class="message-username ${usernameClass}">${messageData.senderName || senderUser.displayName}</span>
                             <span class="message-timestamp">${time}</span>
                         </div>
                         <div class="message-content">
-                            ${processedContent}
+                            ${processedContent ? `<div class="message-text" ${isOwnMessage && !messageData.dataRequest ? `onclick="startEdit('${messageId}')"` : ''}>${processedContent}</div>` : ''}
                             ${attachmentsHtml}
                             ${formHtml}
                         </div>
-                        <div class="message-reactions">
-                            <div class="reaction" onclick="toggleReaction(this, '👍')">👍 <span>1</span></div>
-                            <div class="reaction" onclick="toggleReaction(this, '😊')">😊</div>
+                        <div class="message-reactions"></div>
+                        <div class="floating-actions">
+                            <button class="emoji-trigger" onclick="toggleEmojiPicker(this)">😊</button>
+                            <div class="emoji-picker">
+                                ${getEmojiPickerButtons(messageId)}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -1446,9 +1956,80 @@
             }
             
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            
+            // Store original content for editing
+            if (isOwnMessage && !messageData.dataRequest) {
+                const messageEl = document.getElementById(messageId);
+                if (messageEl) {
+                    messageEl.dataset.originalContent = messageData.content;
+                }
+            }
         }
         
-        function toggleReaction(reactionEl, emoji) {
+
+        window.toggleEmojiPicker = function(button) {
+            const picker = button.nextElementSibling;
+            const isActive = picker.classList.contains('active');
+            
+            // Close all other pickers
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                if (p !== picker) p.classList.remove('active');
+            });
+            
+            // Toggle this picker
+            picker.classList.toggle('active', !isActive);
+            
+            // Close picker when clicking outside
+            if (!isActive) {
+                setTimeout(() => {
+                    const closeHandler = (e) => {
+                        if (!button.contains(e.target) && !picker.contains(e.target)) {
+                            picker.classList.remove('active');
+                            document.removeEventListener('click', closeHandler);
+                        }
+                    };
+                    document.addEventListener('click', closeHandler);
+                }, 10);
+            }
+        }
+        
+        window.addReaction = function(messageId, emoji) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageEl) return;
+            
+            const reactionsContainer = messageEl.querySelector('.message-reactions');
+            if (!reactionsContainer) return;
+            
+            // Check if reaction already exists
+            const existingReaction = Array.from(reactionsContainer.children).find(r => 
+                r.textContent.includes(emoji)
+            );
+            
+            if (existingReaction) {
+                // Increment count
+                const countSpan = existingReaction.querySelector('span');
+                if (countSpan) {
+                    const count = parseInt(countSpan.textContent) || 0;
+                    countSpan.textContent = count + 1;
+                } else {
+                    existingReaction.innerHTML = `${emoji} <span>2</span>`;
+                }
+            } else {
+                // Add new reaction
+                const reactionEl = document.createElement('div');
+                reactionEl.className = 'reaction';
+                reactionEl.innerHTML = `${emoji} <span>1</span>`;
+                reactionEl.onclick = () => toggleReaction(reactionEl, emoji);
+                reactionsContainer.appendChild(reactionEl);
+            }
+            
+            // Close emoji picker
+            document.querySelectorAll('.emoji-picker.active').forEach(p => {
+                p.classList.remove('active');
+            });
+        }
+        
+        window.toggleReaction = function(reactionEl, emoji) {
             const countSpan = reactionEl.querySelector('span');
             if (countSpan) {
                 const count = parseInt(countSpan.textContent) || 0;
@@ -1460,6 +2041,86 @@
             } else {
                 reactionEl.innerHTML = `${emoji} <span>1</span>`;
             }
+        }
+        
+        function startEdit(messageId) {
+            const messageEl = document.querySelector(`[data-message-id="${messageId}"]`);
+            if (!messageEl) return;
+            
+            const contentEl = messageEl.querySelector('.message-text');
+            if (!contentEl) return; // No text content to edit
+            
+            const originalContent = messageEl.dataset.originalContent || contentEl.textContent;
+            
+            if (contentEl.classList.contains('editing')) return;
+            
+            contentEl.classList.add('editing');
+            contentEl.innerHTML = `
+                <textarea class="edit-input" rows="1">${originalContent}</textarea>
+                <div class="edit-controls">
+                    Press Enter to save, Escape to cancel
+                </div>
+            `;
+            
+            const textarea = contentEl.querySelector('.edit-input');
+            textarea.focus();
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+            
+            // Auto-resize textarea
+            const autoResize = () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            };
+            autoResize();
+            textarea.addEventListener('input', autoResize);
+            
+            const saveEdit = () => {
+                const newContent = textarea.value.trim();
+                if (newContent && newContent !== originalContent) {
+                    // Process mentions in content
+                    let processedContent = newContent;
+                    if (processedContent.includes('@')) {
+                        processedContent = processedContent.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+                    }
+                    contentEl.innerHTML = processedContent + '<span class="message-edited">(edited)</span>';
+                    messageEl.dataset.originalContent = newContent;
+                } else {
+                    // Process mentions in original content
+                    let processedContent = originalContent;
+                    if (processedContent.includes('@')) {
+                        processedContent = processedContent.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+                    }
+                    contentEl.innerHTML = processedContent;
+                }
+                contentEl.classList.remove('editing');
+                contentEl.onclick = () => startEdit(messageId);
+            };
+            
+            const cancelEdit = () => {
+                // Process mentions in original content
+                let processedContent = originalContent;
+                if (processedContent.includes('@')) {
+                    processedContent = processedContent.replace(/@(\w+)/g, '<span class="mention">@$1</span>');
+                }
+                contentEl.innerHTML = processedContent;
+                contentEl.classList.remove('editing');
+                contentEl.onclick = () => startEdit(messageId);
+            };
+            
+            textarea.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    saveEdit();
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEdit();
+                }
+            });
+            
+            textarea.addEventListener('blur', saveEdit);
+            
+            // Remove onclick temporarily
+            contentEl.onclick = null;
         }
 
         function renderAttachments(attachments) {
@@ -1502,7 +2163,7 @@
                 const isLast = i === 3 && count > 4;
                 const remaining = count - 4;
                 
-                gridHtml += `<div class="media-grid-item" onclick="openLightbox(${i}, '${btoa(JSON.stringify(mediaItems))}')">`;
+                gridHtml += `<div class="media-grid-item" onclick="openLightbox(${i}, '${encodeURIComponent(JSON.stringify(mediaItems))}')">`;
                 
                 if (item.type === 'image') {
                     gridHtml += `<img src="${item.url}" alt="${item.title || 'Image'}" loading="lazy" />`;
@@ -1551,10 +2212,13 @@
                 case 'audio':
                     return `
                         <div class="attachment">
-                            <audio controls class="attachment-audio">
+                            <audio controls class="attachment-audio" preload="metadata" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
                                 <source src="${attachment.url}" type="${attachment.mimeType || 'audio/mpeg'}">
                                 Your browser does not support the audio element.
                             </audio>
+                            <div style="display: none; padding: 8px; background: #2f3349; border-radius: 4px; color: #94a3b8; font-size: 12px;">
+                                ⚠️ Audio could not be loaded. <a href="${attachment.url}" target="_blank" style="color: #60a5fa;">Download file</a>
+                            </div>
                             ${attachment.title ? `<div class="attachment-title">${attachment.title}</div>` : ''}
                         </div>
                     `;
@@ -1750,8 +2414,52 @@
         window.switchUser = function(userId) {
             currentUser = demoUsers[userId];
             updateUserDisplay();
+            
+            // Re-evaluate existing messages for floating actions
+            updateExistingMessagesForUser();
+            
             console.log('👤 Switched to user:', currentUser.displayName);
         };
+
+        function updateExistingMessagesForUser() {
+            // Get all message groups
+            const messageGroups = document.querySelectorAll('.message-group');
+            
+            messageGroups.forEach(group => {
+                const userId = group.dataset.userId;
+                const isOwnMessage = userId === currentUser.id;
+                const message = group.querySelector('.message');
+                const isSystem = group.classList.contains('system');
+                
+                // Update message classes
+                if (message) {
+                    if (isOwnMessage) {
+                        message.classList.add('own-message');
+                    } else {
+                        message.classList.remove('own-message');
+                    }
+                }
+                
+                // Ensure floating actions exist for all messages (except system messages)
+                if (!isSystem) {
+                    let existingActions = group.querySelector('.floating-actions');
+                    if (!existingActions) {
+                        const messageEl = group.querySelector('[data-message-id]');
+                        const messageId = messageEl ? messageEl.dataset.messageId : '';
+                        
+                        const floatingActionsHtml = `
+                            <div class="floating-actions">
+                                <button class="emoji-trigger" onclick="toggleEmojiPicker(this)">😊</button>
+                                <div class="emoji-picker">
+                                    ${getEmojiPickerButtons(messageId)}
+                                </div>
+                            </div>
+                        `;
+                        messageEl.insertAdjacentHTML('beforeend', floatingActionsHtml);
+                    }
+                }
+            });
+        }
 
         // Demo Functions - Rich Media
         window.sendImageMessage = function() {
@@ -1824,6 +2532,55 @@
             addMessage(message);
         };
 
+        // Generate a simple test audio file (beep sound)
+        function generateTestAudio() {
+            // Create a simple WAV file with a beep sound
+            const sampleRate = 22050;
+            const duration = 1; // 1 second
+            const frequency = 440; // A4 note
+            const samples = sampleRate * duration;
+            
+            // Create WAV header
+            const header = new ArrayBuffer(44);
+            const view = new DataView(header);
+            
+            // RIFF header
+            view.setUint32(0, 0x46464952, true); // "RIFF"
+            view.setUint32(4, 36 + samples * 2, true); // File size
+            view.setUint32(8, 0x45564157, true); // "WAVE"
+            
+            // Format chunk
+            view.setUint32(12, 0x20746d66, true); // "fmt "
+            view.setUint32(16, 16, true); // Chunk size
+            view.setUint16(20, 1, true); // PCM format
+            view.setUint16(22, 1, true); // Mono
+            view.setUint32(24, sampleRate, true); // Sample rate
+            view.setUint32(28, sampleRate * 2, true); // Byte rate
+            view.setUint16(32, 2, true); // Block align
+            view.setUint16(34, 16, true); // Bits per sample
+            
+            // Data chunk
+            view.setUint32(36, 0x61746164, true); // "data"
+            view.setUint32(40, samples * 2, true); // Data size
+            
+            // Generate audio data
+            const audioData = new Int16Array(samples);
+            for (let i = 0; i < samples; i++) {
+                const t = i / sampleRate;
+                const amplitude = Math.sin(2 * Math.PI * frequency * t) * 0.3; // 30% volume
+                audioData[i] = amplitude * 32767; // Convert to 16-bit
+            }
+            
+            // Combine header and data
+            const wavFile = new Uint8Array(header.byteLength + audioData.byteLength);
+            wavFile.set(new Uint8Array(header), 0);
+            wavFile.set(new Uint8Array(audioData.buffer), header.byteLength);
+            
+            // Create blob and URL
+            const blob = new Blob([wavFile], { type: 'audio/wav' });
+            return URL.createObjectURL(blob);
+        }
+
         window.sendAudioMessage = function() {
             const message = {
                 content: "Listen to this voice note about the project:",
@@ -1831,9 +2588,9 @@
                 senderName: currentUser.displayName,
                 attachments: [{
                     type: 'audio',
-                    url: 'https://file-examples.com/storage/fe14eb58c4608145968248c/2017/11/file_example_MP3_700KB.mp3',
+                    url: generateTestAudio(),
                     title: 'Project Update Voice Note',
-                    mimeType: 'audio/mpeg'
+                    mimeType: 'audio/wav'
                 }]
             };
             addMessage(message);
@@ -1857,7 +2614,7 @@
         // Demo Functions - Zod Forms
         window.sendFeedbackForm = function() {
             const schema = {
-                rating: "z.number().min(1).max(5).describe('Rate your experience from 1-5')",
+                rating: "z.number().min(1).max(5).describe('Rate your experience').meta({ fieldType: 'stars' })",
                 comments: "z.string().min(10).max(500).describe('Share your detailed feedback')",
                 wouldRecommend: "z.boolean().describe('Would you recommend us to others?')",
                 category: "z.enum(['ui', 'performance', 'features', 'support']).describe('Feedback category')"
@@ -1926,10 +2683,10 @@
         window.sendSurveyForm = function() {
             const schema = {
                 experience: "z.enum(['excellent', 'good', 'average', 'poor']).describe('Overall experience')",
-                easeOfUse: "z.number().min(1).max(10).describe('Ease of use (1-10)')",
+                easeOfUse: "z.number().min(1).max(10).describe('Ease of use').meta({ fieldType: 'slider' })",
                 improvements: "z.string().optional().describe('Suggested improvements')",
                 frequency: "z.enum(['daily', 'weekly', 'monthly', 'rarely']).describe('How often do you use this?')",
-                recommendation: "z.number().min(0).max(10).describe('Net Promoter Score (0-10)')"
+                recommendation: "z.number().min(0).max(10).describe('Net Promoter Score').meta({ fieldType: 'slider' })"
             };
             
             updateFormPreview(schema);
@@ -2065,7 +2822,53 @@
             addMessage(message);
         };
 
-        // File Upload Simulation
+        // Real File Upload Handler
+        window.handleFileUpload = function(input, type) {
+            const file = input.files[0];
+            if (!file) return;
+
+            // Create object URL for the file
+            const fileUrl = URL.createObjectURL(file);
+            
+            // Determine file type
+            let attachmentType = 'document';
+            if (file.type.startsWith('image/')) {
+                attachmentType = 'image';
+            } else if (file.type.startsWith('audio/')) {
+                attachmentType = 'audio';
+            } else if (file.type.startsWith('video/')) {
+                attachmentType = 'video';
+            }
+
+            // Show upload progress
+            addMessage({
+                content: `📎 Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)...`,
+                senderId: currentUser.id,
+                senderName: currentUser.displayName
+            });
+
+            // Simulate upload delay then add actual file message
+            setTimeout(() => {
+                const message = {
+                    content: attachmentType === 'image' ? `Uploaded image: ${file.name}` : `Shared file: ${file.name}`,
+                    senderId: currentUser.id,
+                    senderName: currentUser.displayName,
+                    attachments: [{
+                        type: attachmentType,
+                        url: fileUrl,
+                        title: file.name,
+                        mimeType: file.type,
+                        size: file.size
+                    }]
+                };
+                addMessage(message);
+                
+                // Clear the input
+                input.value = '';
+            }, 1000);
+        };
+
+        // File Upload Simulation (kept for backwards compatibility)
         window.simulateFileUpload = function(type) {
             const files = {
                 image: {
@@ -2149,7 +2952,7 @@
         
         function openLightbox(index, encodedMedia) {
             try {
-                const mediaItems = JSON.parse(atob(encodedMedia));
+                const mediaItems = JSON.parse(decodeURIComponent(encodedMedia));
                 currentLightboxMedia = mediaItems;
                 currentLightboxIndex = index;
                 
@@ -2166,7 +2969,7 @@
         
         function openSingleImageLightbox(url, title) {
             const mediaItems = [{ type: 'image', url: url, title: title }];
-            openLightbox(0, btoa(JSON.stringify(mediaItems)));
+            openLightbox(0, encodeURIComponent(JSON.stringify(mediaItems)));
         }
         
         function closeLightbox() {

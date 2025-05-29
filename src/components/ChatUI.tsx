@@ -9,7 +9,7 @@ import {
   serverTimestamp,
   Unsubscribe,
 } from 'firebase/firestore';
-import { Send, Paperclip } from 'lucide-react';
+import { Send, Paperclip, Smile } from 'lucide-react';
 import { getDb } from '../lib/firebase';
 import { AccessControl } from '../utils/access-control';
 import {
@@ -66,11 +66,188 @@ const ChatUI: React.FC<ChatUIProps> = ({
   const [showMediaModal, setShowMediaModal] = useState(false);
   const [formSchema, setFormSchema] = useState<any>(null);
 
+  // Emoji picker state
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+  // Mention autocomplete state
+  const [mentionState, setMentionState] = useState({
+    isActive: false,
+    startPos: -1,
+    selectedIndex: 0,
+    filteredUsers: [] as User[],
+  });
+
   // References
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const unsubscribeRef = useRef<Unsubscribe | null>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
   const db = getDb();
+
+  // Emoji list for picker
+  const REACTION_EMOJIS = [
+    { emoji: '👍', name: 'thumbs up' },
+    { emoji: '❤️', name: 'heart' },
+    { emoji: '😂', name: 'laughing' },
+    { emoji: '😮', name: 'surprised' },
+    { emoji: '😢', name: 'sad' },
+    { emoji: '😡', name: 'angry' },
+    { emoji: '👀', name: 'eyes' },
+    { emoji: '🙏', name: 'high five' },
+    { emoji: '🎯', name: 'dart' },
+    { emoji: '💯', name: '100' },
+    { emoji: '🤷', name: 'shrug' },
+    { emoji: '🎉', name: 'celebration' },
+    { emoji: '🚀', name: 'rocket' },
+    { emoji: '💡', name: 'idea' },
+    { emoji: '🔥', name: 'fire' },
+  ];
+
+  // Demo users for mention autocomplete
+  const demoUsers: User[] = [
+    {
+      id: 'user1',
+      displayName: 'Alice Developer',
+      email: 'alice@example.com',
+      role: 'user',
+      isAgent: false,
+    },
+    {
+      id: 'user2',
+      displayName: 'Bob Manager',
+      email: 'bob@example.com',
+      role: 'admin',
+      isAgent: false,
+    },
+    {
+      id: 'carol_manager',
+      displayName: 'Carol Manager',
+      email: 'carol@example.com',
+      role: 'admin',
+      isAgent: false,
+    },
+    {
+      id: 'ai_assistant',
+      displayName: 'AI Assistant',
+      email: 'ai@example.com',
+      role: 'agent',
+      isAgent: true,
+    },
+  ];
+
+  /**
+   * Insert emoji at cursor position
+   */
+  const insertEmoji = useCallback((emoji: string) => {
+    if (!inputRef.current) return;
+
+    const input = inputRef.current;
+    const start = input.selectionStart || 0;
+    const end = input.selectionEnd || 0;
+    const text = input.value;
+
+    // Insert emoji at cursor position
+    const newText = text.substring(0, start) + emoji + text.substring(end);
+    setInputValue(newText);
+
+    // Move cursor after inserted emoji
+    setTimeout(() => {
+      const newPos = start + emoji.length;
+      input.setSelectionRange(newPos, newPos);
+      input.focus();
+    }, 0);
+
+    // Close emoji picker
+    setShowEmojiPicker(false);
+  }, []);
+
+  /**
+   * Toggle emoji picker
+   */
+  const toggleEmojiPicker = useCallback(() => {
+    console.log('🎭 Emoji picker toggle clicked! Current state:', showEmojiPicker);
+    setShowEmojiPicker(!showEmojiPicker);
+    console.log('🎭 Emoji picker will now be:', !showEmojiPicker);
+  }, [showEmojiPicker]);
+
+  /**
+   * Handle mention autocomplete
+   */
+  const handleMentionAutocomplete = useCallback((value: string, cursorPos: number) => {
+    console.log('💬 Mention autocomplete triggered:', { value, cursorPos });
+    
+    // Find @ symbol before cursor
+    let atPos = -1;
+    for (let i = cursorPos - 1; i >= 0; i--) {
+      if (value[i] === '@') {
+        atPos = i;
+        break;
+      } else if (value[i] === ' ' || value[i] === '\n') {
+        break;
+      }
+    }
+
+    console.log('💬 @ symbol found at position:', atPos);
+
+    if (atPos >= 0) {
+      const query = value.slice(atPos + 1, cursorPos).toLowerCase();
+      console.log('💬 Query after @:', query);
+      
+      const users = demoUsers.filter(user => 
+        user.id !== currentUser.id && 
+        ((user.displayName?.toLowerCase().includes(query)) || 
+         user.id.toLowerCase().includes(query))
+      );
+
+      console.log('💬 Filtered users:', users.map(u => u.displayName));
+
+      if (users.length > 0) {
+        console.log('💬 Setting mention state to active with', users.length, 'users');
+        setMentionState({
+          isActive: true,
+          startPos: atPos,
+          selectedIndex: 0,
+          filteredUsers: users,
+        });
+      } else {
+        console.log('💬 No users found, deactivating mentions');
+        setMentionState(prev => ({ ...prev, isActive: false }));
+      }
+    } else {
+      console.log('💬 No @ symbol found, deactivating mentions');
+      setMentionState(prev => ({ ...prev, isActive: false }));
+    }
+  }, [currentUser.id]);
+
+  /**
+   * Select mention from autocomplete
+   */
+  const selectMention = useCallback((index: number) => {
+    if (!mentionState.isActive || !inputRef.current) return;
+
+    const user = mentionState.filteredUsers[index];
+    if (!user) return;
+
+    const input = inputRef.current;
+    const text = input.value;
+    const cursorPos = input.selectionStart || 0;
+
+    // Replace the partial mention with the full username
+    const beforeMention = text.slice(0, mentionState.startPos);
+    const afterMention = text.slice(cursorPos);
+    const userName = user.displayName || user.id;
+    const newText = beforeMention + `@${userName} ` + afterMention;
+
+    setInputValue(newText);
+    setMentionState(prev => ({ ...prev, isActive: false }));
+
+    // Move cursor after mention
+    setTimeout(() => {
+      const newPos = beforeMention.length + userName.length + 2;
+      input.setSelectionRange(newPos, newPos);
+      input.focus();
+    }, 0);
+  }, [mentionState]);
 
   /**
    * Scroll to bottom of messages
@@ -266,10 +443,57 @@ const ChatUI: React.FC<ChatUIProps> = ({
    * Handle input key events
    */
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    // Handle mention autocomplete navigation
+    if (mentionState.isActive) {
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setMentionState(prev => ({
+          ...prev,
+          selectedIndex: Math.max(0, prev.selectedIndex - 1),
+        }));
+        return;
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setMentionState(prev => ({
+          ...prev,
+          selectedIndex: Math.min(prev.filteredUsers.length - 1, prev.selectedIndex + 1),
+        }));
+        return;
+      } else if (e.key === 'Tab' || e.key === 'Enter') {
+        e.preventDefault();
+        selectMention(mentionState.selectedIndex);
+        return;
+      } else if (e.key === 'Escape') {
+        setMentionState(prev => ({ ...prev, isActive: false }));
+        return;
+      }
+    }
+
+    // Handle emoji picker
+    if (e.key === 'Escape' && showEmojiPicker) {
+      setShowEmojiPicker(false);
+      return;
+    }
+
+    // Handle message sending
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e as any);
     }
+  };
+
+  /**
+   * Handle input change events
+   */
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    console.log('⌨️ Input changed:', value);
+    setInputValue(value);
+
+    // Handle mention autocomplete
+    const cursorPos = e.target.selectionStart || 0;
+    console.log('⌨️ Cursor position:', cursorPos);
+    handleMentionAutocomplete(value, cursorPos);
   };
 
   /**
@@ -322,6 +546,20 @@ const ChatUI: React.FC<ChatUIProps> = ({
       inputRef.current?.focus();
     }
   }, [accessLevel]);
+
+  // Handle click outside emoji picker
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target as Node)) {
+        setShowEmojiPicker(false);
+      }
+    };
+
+    if (showEmojiPicker) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showEmojiPicker]);
 
   // Loading state
   if (isLoading || hasAccess === null) {
@@ -406,26 +644,95 @@ const ChatUI: React.FC<ChatUIProps> = ({
 
             {/* Message Input */}
             <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message... (Use @ to mention users)"
-                className="w-full bg-dark-800 border border-dark-600 rounded-lg px-4 py-3 text-dark-100 placeholder-dark-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                rows={1}
-                style={{
-                  minHeight: '44px',
-                  maxHeight: '120px',
-                  height: 'auto',
-                }}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = target.scrollHeight + 'px';
-                }}
-                disabled={isSubmitting}
-              />
+              <div className="flex items-end bg-dark-800 border border-dark-600 rounded-lg">
+                <textarea
+                  ref={inputRef}
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type a message... (Use @ to mention users)"
+                  className="flex-1 bg-transparent px-4 py-3 text-dark-100 placeholder-dark-400 resize-none focus:outline-none"
+                  rows={1}
+                  style={{
+                    minHeight: '44px',
+                    maxHeight: '120px',
+                    height: 'auto',
+                  }}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = target.scrollHeight + 'px';
+                  }}
+                  disabled={isSubmitting}
+                />
+                
+                {/* Emoji Button */}
+                <button
+                  type="button"
+                  onClick={toggleEmojiPicker}
+                  className="p-2 text-dark-400 hover:text-dark-200 transition-colors"
+                  title="Add emoji"
+                >
+                  <Smile size={20} />
+                </button>
+              </div>
+
+              {/* Mention Autocomplete */}
+              {mentionState.isActive && (
+                <div className="absolute bottom-full left-0 right-0 mb-2 bg-dark-800 border border-dark-600 rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                  {(() => {console.log('💬 RENDERING mention autocomplete with', mentionState.filteredUsers.length, 'users'); return null;})()}
+                  {mentionState.filteredUsers.map((user, index) => {
+                    const initials = (user.displayName || user.id).split(' ').map(n => n[0]).join('').slice(0, 2);
+                    const isSelected = index === mentionState.selectedIndex;
+                    
+                    return (
+                      <div
+                        key={user.id}
+                        className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
+                          isSelected ? 'bg-blue-600 text-white' : 'hover:bg-dark-700'
+                        }`}
+                        onClick={() => selectMention(index)}
+                      >
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-medium ${
+                          user.isAgent ? 'bg-purple-600' : 'bg-blue-600'
+                        }`}>
+                          {initials}
+                        </div>
+                        <div>
+                          <div className="font-medium">{user.displayName || user.id}</div>
+                          {user.isAgent && (
+                            <div className="text-xs text-purple-400">AI Agent</div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* Emoji Picker */}
+              {showEmojiPicker && (
+                <div
+                  ref={emojiPickerRef}
+                  className="absolute bottom-full right-0 mb-2 bg-dark-800 border border-dark-600 rounded-lg shadow-xl p-3 z-50"
+                  style={{ minWidth: '280px' }}
+                >
+                  {(() => {console.log('🎭 RENDERING emoji picker'); return null;})()}
+                  <div className="grid grid-cols-5 gap-2">
+                    {REACTION_EMOJIS.map(({ emoji, name }) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => insertEmoji(emoji)}
+                        className="p-2 text-xl hover:bg-dark-700 rounded transition-colors"
+                        title={name}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Send Button */}
