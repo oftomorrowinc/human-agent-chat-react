@@ -1,6 +1,6 @@
 {
   "name": "@oftomorrow/human-agent-chat",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "React chat component for human + AI-agent threads, with @-mentions and pluggable Firebase/Supabase backends.",
   "license": "MIT",
   "author": "Of Tomorrow",
@@ -9,34 +9,56 @@
     "access": "public"
   },
   "type": "module",
+  "packageManager": "pnpm@10.33.2",
+  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
     },
     "./firebase": {
-      "types": "./dist/firebase/index.d.ts",
-      "import": "./dist/firebase/index.js"
+      "import": {
+        "types": "./dist/firebase/index.d.ts",
+        "default": "./dist/firebase/index.js"
+      },
+      "require": {
+        "types": "./dist/firebase/index.d.cts",
+        "default": "./dist/firebase/index.cjs"
+      }
     },
     "./supabase": {
-      "types": "./dist/supabase/index.d.ts",
-      "import": "./dist/supabase/index.js"
+      "import": {
+        "types": "./dist/supabase/index.d.ts",
+        "default": "./dist/supabase/index.js"
+      },
+      "require": {
+        "types": "./dist/supabase/index.d.cts",
+        "default": "./dist/supabase/index.cjs"
+      }
     },
-    "./styles.css": "./dist/styles.css"
+    "./styles.css": "./dist/styles.css",
+    "./package.json": "./package.json"
   },
   "sideEffects": [
     "**/*.css"
   ],
   "scripts": {
-    "dev": "vite --mode example",
-    "build": "tsc -p tsconfig.build.json && vite build && pnpm build:css",
+    "dev": "vite",
+    "build": "tsup && pnpm build:css",
     "build:css": "tailwindcss -i ./src/index.css -o ./dist/styles.css --minify --content './src/**/*.{ts,tsx}'",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
@@ -46,6 +68,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build",
     "prepublishOnly": "pnpm build",
     "prepare": "husky"
   },
@@ -102,9 +125,9 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^3.4.17",
+    "tsup": "8.5.1",
     "typescript": "^5.7.3",
     "vite": "^6.0.7",
-    "vite-plugin-dts": "^4.4.0",
     "vitest": "^3.2.4"
   },
   "lint-staged": {
