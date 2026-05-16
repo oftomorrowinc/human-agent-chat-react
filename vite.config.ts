@@ -52,8 +52,8 @@ export default defineConfig(({ mode }) => {
           'firebase/index': resolve(__dirname, 'src/firebase/index.ts'),
           'supabase/index': resolve(__dirname, 'src/supabase/index.ts'),
         },
-        formats: ['es', 'cjs'],
-        fileName: (format, name) => `${name}.${format === 'es' ? 'js' : 'cjs'}`,
+        formats: ['es'],
+        fileName: (_format, name) => `${name}.js`,
       },
       rollupOptions: {
         external: [...peerExternals, ...radixExternals],

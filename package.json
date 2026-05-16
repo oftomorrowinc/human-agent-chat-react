@@ -9,7 +9,6 @@
     "access": "public"
   },
   "type": "module",
-  "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "files": [
@@ -20,18 +19,15 @@
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "import": "./dist/index.js"
     },
     "./firebase": {
       "types": "./dist/firebase/index.d.ts",
-      "import": "./dist/firebase/index.js",
-      "require": "./dist/firebase/index.cjs"
+      "import": "./dist/firebase/index.js"
     },
     "./supabase": {
       "types": "./dist/supabase/index.d.ts",
-      "import": "./dist/supabase/index.js",
-      "require": "./dist/supabase/index.cjs"
+      "import": "./dist/supabase/index.js"
     },
     "./styles.css": "./dist/styles.css"
   },
