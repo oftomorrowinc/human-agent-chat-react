@@ -1,249 +1,162 @@
+import { describe, expect, it, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom';
-import MessageItem from '../MessageItem';
-import { Message, User } from '../../types';
 
-// Mock date-fns
-jest.mock('date-fns', () => ({
-  formatDistanceToNow: jest.fn(() => '5 minutes ago')
+import { MessageItem } from '@/components/MessageItem';
+import type { Author, Message } from '@/types';
+
+vi.mock('date-fns', () => ({
+  formatDistanceToNow: () => '5 minutes ago',
 }));
 
+const TODD: Author = { id: 'todd', name: 'Todd Sampson', type: 'user' };
+const AGENT: Author = { id: 'planner', name: 'Planning Agent', type: 'agent' };
+const SYSTEM: Author = { id: 'system', name: 'System', type: 'system' };
+const RUNNER: Author = { id: 'runner', name: 'Runner', type: 'runner' };
+
+const baseMessage: Message = {
+  id: 'msg-1',
+  author: TODD,
+  content: 'hello world',
+  createdAt: Date.parse('2026-04-01T00:00:00Z'),
+  recipient: null,
+};
+
 describe('MessageItem', () => {
-  const mockCurrentUser: User = {
-    id: 'current-user',
-    displayName: 'Current User',
-    role: 'user',
-    email: 'current@example.com'
-  };
-
-  const mockMessage: Message = {
-    id: 'msg-123',
-    content: 'Hello world!',
-    senderId: 'other-user',
-    senderName: 'Other User',
-    senderRole: 'user',
-    createdAt: '2024-01-01T00:00:00Z',
-    updatedAt: '2024-01-01T00:00:00Z'
-  };
-
-  it('should render message content', () => {
-    render(
-      <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    expect(screen.getByText('Hello world!')).toBeInTheDocument();
+  it('renders content + author name', () => {
+    render(<MessageItem message={baseMessage} currentAuthorId="other" />);
+    expect(screen.getByText('Todd Sampson')).toBeInTheDocument();
+    expect(screen.getByText('hello world')).toBeInTheDocument();
   });
 
-  it('should render sender name', () => {
-    render(
-      <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    expect(screen.getByText('Other User')).toBeInTheDocument();
-  });
-
-  it('should render timestamp', () => {
-    render(
-      <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-      />
-    );
-
+  it('renders the timestamp via date-fns', () => {
+    render(<MessageItem message={baseMessage} currentAuthorId="other" />);
     expect(screen.getByText('5 minutes ago')).toBeInTheDocument();
   });
 
-  it('should apply different styles for current user messages', () => {
-    const currentUserMessage = {
-      ...mockMessage,
-      senderId: 'current-user',
-      senderName: 'Current User'
-    };
-
-    render(
-      <MessageItem
-        message={currentUserMessage}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    // Current user messages should have different styling
-    expect(screen.getByRole('region')).toHaveClass('flex-row-reverse');
-  });
-
-  it('should apply agent styling when isAgent is true', () => {
-    render(
-      <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-        isAgent={true}
-      />
-    );
-
+  it('renders agent badge for agent authors', () => {
+    render(<MessageItem message={{ ...baseMessage, author: AGENT }} currentAuthorId="other" />);
     expect(screen.getByText('AI')).toBeInTheDocument();
   });
 
-  it('should apply system styling when isSystem is true', () => {
-    render(
-      <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-        isSystem={true}
-      />
-    );
-
-    expect(screen.getByText('Other User')).toHaveClass('text-red-300');
+  it('renders system badge for system authors', () => {
+    render(<MessageItem message={{ ...baseMessage, author: SYSTEM }} currentAuthorId="other" />);
+    expect(screen.getByText('SYSTEM')).toBeInTheDocument();
   });
 
-  it('should render image attachments', () => {
-    const messageWithImage = {
-      ...mockMessage,
-      attachments: [{
-        type: 'image' as const,
-        url: 'https://example.com/image.jpg',
-        title: 'Test Image'
-      }]
-    };
-
-    render(
-      <MessageItem
-        message={messageWithImage}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    const image = screen.getByAltText('Test Image');
-    expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', 'https://example.com/image.jpg');
+  it('renders runner badge for runner authors', () => {
+    render(<MessageItem message={{ ...baseMessage, author: RUNNER }} currentAuthorId="other" />);
+    expect(screen.getByText('RUNNER')).toBeInTheDocument();
   });
 
-  it('should render YouTube attachments', () => {
-    const messageWithYouTube = {
-      ...mockMessage,
-      attachments: [{
-        type: 'youtube' as const,
-        url: 'https://youtube.com/watch?v=123',
-        title: 'YouTube Video',
-        thumbnailUrl: 'https://img.youtube.com/vi/123/hqdefault.jpg'
-      }]
-    };
-
-    render(
-      <MessageItem
-        message={messageWithYouTube}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    expect(screen.getByText('YouTube Video')).toBeInTheDocument();
-    const youtubeElement = screen.getByRole('link', { name: /youtube video/i });
-    expect(youtubeElement).toBeInTheDocument();
+  it('reverses the layout when the author is the current user', () => {
+    const { container } = render(<MessageItem message={baseMessage} currentAuthorId="todd" />);
+    const region = container.querySelector('[role="region"]')!;
+    expect(region.className).toContain('flex-row-reverse');
   });
 
-  it('should render document attachments', () => {
-    const messageWithDocument = {
-      ...mockMessage,
-      attachments: [{
-        type: 'document' as const,
-        url: 'https://example.com/document.pdf',
-        title: 'Test Document'
-      }]
-    };
-
+  it('renders the recipient arrow when set', () => {
     render(
-      <MessageItem
-        message={messageWithDocument}
-        currentUser={mockCurrentUser}
-      />
+      <MessageItem message={{ ...baseMessage, recipient: '@planner' }} currentAuthorId="other" />,
     );
-
-    expect(screen.getByText('Test Document')).toBeInTheDocument();
-    const link = screen.getByRole('link');
-    expect(link).toHaveAttribute('href', 'https://example.com/document.pdf');
+    expect(screen.getByText('→ @planner')).toBeInTheDocument();
   });
 
-  it('should format mentions in content', () => {
-    const messageWithMentions = {
-      ...mockMessage,
-      content: 'Hello @alice and @bob!'
-    };
-
-    render(
-      <MessageItem
-        message={messageWithMentions}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    // Check that mentions are wrapped in spans
-    expect(screen.getByText(/@alice/)).toBeInTheDocument();
-    expect(screen.getByText(/@bob/)).toBeInTheDocument();
+  it('renders the status badge when status is blocked', () => {
+    render(<MessageItem message={{ ...baseMessage, status: 'blocked' }} currentAuthorId="other" />);
+    expect(screen.getByText('blocked')).toBeInTheDocument();
   });
 
-  it('should not render reaction buttons when disabled', () => {
+  it('auto-detects image URLs and renders an inline image', () => {
     render(
       <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-        enableReactions={false}
-      />
+        message={{ ...baseMessage, content: 'look https://example.com/cat.png' }}
+        currentAuthorId="other"
+      />,
     );
-
-    expect(screen.queryByTitle('React to message')).not.toBeInTheDocument();
+    expect(screen.getByRole('img', { name: /image/i })).toBeInTheDocument();
   });
 
-  it('should not render reply button when disabled', () => {
-    render(
-      <MessageItem
-        message={mockMessage}
-        currentUser={mockCurrentUser}
-        enableReplies={false}
-      />
+  it('formats mentions with span.mention', () => {
+    const { container } = render(
+      <MessageItem message={{ ...baseMessage, content: 'hi @alice' }} currentAuthorId="other" />,
     );
-
-    expect(screen.queryByTitle('Reply to message')).not.toBeInTheDocument();
+    expect(container.querySelector('span.mention')).not.toBeNull();
   });
 
-  it('should handle unknown sender gracefully', () => {
-    const messageWithoutSender = {
-      ...mockMessage,
-      senderName: undefined
-    };
-
-    render(
-      <MessageItem
-        message={messageWithoutSender}
-        currentUser={mockCurrentUser}
-      />
-    );
-
-    expect(screen.getByText('Unknown User')).toBeInTheDocument();
+  it('shows the author-type attribute for downstream styling hooks', () => {
+    render(<MessageItem message={{ ...baseMessage, author: AGENT }} currentAuthorId="other" />);
+    const region = screen.getByRole('region');
+    expect(region.getAttribute('data-author-type')).toBe('agent');
   });
 
-  it('should handle invalid timestamp gracefully', () => {
-    const { formatDistanceToNow } = require('date-fns');
-    (formatDistanceToNow as jest.Mock).mockImplementationOnce(() => {
-      throw new Error('Invalid date');
-    });
-
-    const messageWithInvalidTime = {
-      ...mockMessage,
-      createdAt: 'invalid-date'
-    };
-
+  it('renders YouTube attachments with the play overlay link', () => {
+    const youtubeUrl = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ';
     render(
       <MessageItem
-        message={messageWithInvalidTime}
-        currentUser={mockCurrentUser}
-      />
+        message={{ ...baseMessage, content: `look ${youtubeUrl}` }}
+        currentAuthorId="other"
+      />,
     );
+    const link = screen.getByTestId(/attachment-msg-1-0/);
+    expect(link).toBeInTheDocument();
+    expect(link.getAttribute('href')).toBe(youtubeUrl);
+  });
 
-    expect(screen.getByText('Unknown time')).toBeInTheDocument();
+  it('renders video attachments as a controls element', () => {
+    render(
+      <MessageItem
+        message={{ ...baseMessage, content: 'watch https://example.com/clip.mp4' }}
+        currentAuthorId="other"
+      />,
+    );
+    const video = screen.getByTestId(/attachment-msg-1-0/);
+    expect(video.tagName.toLowerCase()).toBe('video');
+  });
+
+  it('renders audio attachments as a controls element', () => {
+    render(
+      <MessageItem
+        message={{ ...baseMessage, content: 'listen https://example.com/song.mp3' }}
+        currentAuthorId="other"
+      />,
+    );
+    const audio = screen.getByTestId(/attachment-msg-1-0/);
+    expect(audio.tagName.toLowerCase()).toBe('audio');
+  });
+
+  it('renders document attachments as a link', () => {
+    render(
+      <MessageItem
+        message={{ ...baseMessage, content: 'read https://example.com/spec.pdf' }}
+        currentAuthorId="other"
+      />,
+    );
+    const link = screen.getByTestId(/attachment-msg-1-0/);
+    expect(link.tagName.toLowerCase()).toBe('a');
+    expect(link.getAttribute('href')).toBe('https://example.com/spec.pdf');
+  });
+
+  it('renders link attachments for plain URLs', () => {
+    render(
+      <MessageItem
+        message={{ ...baseMessage, content: 'check https://example.com/blog' }}
+        currentAuthorId="other"
+      />,
+    );
+    expect(screen.getByTestId(/attachment-msg-1-0/)).toBeInTheDocument();
+  });
+
+  it('falls back to "unknown time" when createdAt is invalid', async () => {
+    vi.resetModules();
+    vi.doMock('date-fns', () => ({
+      formatDistanceToNow: () => {
+        throw new Error('invalid date');
+      },
+    }));
+    const { MessageItem: Reloaded } = await import('@/components/MessageItem');
+    render(<Reloaded message={baseMessage} currentAuthorId="other" />);
+    expect(screen.getByText(/unknown time/i)).toBeInTheDocument();
+    vi.doUnmock('date-fns');
+    vi.resetModules();
   });
 });

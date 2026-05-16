@@ -1,9 +1,9 @@
 node_modules
-build
 dist
 coverage
 .git
 .env
-*.md
 package-lock.json
+pnpm-lock.yaml
 yarn.lock
+src/components/ui

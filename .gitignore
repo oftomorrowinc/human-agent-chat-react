@@ -77,3 +77,4 @@ temp/
 
 # Jest
 jest_*
+.effective/

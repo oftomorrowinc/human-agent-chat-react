@@ -1,464 +1,232 @@
-# Human Agent Chat React
+# @oftomorrow/human-agent-chat
 
-A modern, opinionated React chat system for human-AI collaboration. Built with Firebase, TypeScript, Tailwind CSS, and designed exclusively for dark mode.
+React chat surface for threads where **humans, AI agents, system messages, and workflow runners** all post side-by-side. Pluggable backend — bring Firebase, Supabase, or roll your own.
 
-## ✨ Features
+- **Storage-free `<Chat>`** — the component renders messages you hand it and calls `onSend` when the user types. No subscriptions, no auth, no database imports.
+- **`useFirebaseChat` / `useSupabaseChat`** — opt-in hooks that bind to Firestore (`onSnapshot`) or Supabase Realtime, and return props ready to spread into `<Chat>`.
+- **@-mention autocomplete** with role-aware indicators (user / agent / runner / effective / coo / chair / system).
+- **Author-type-driven palette** — avatar + badge colors come from `Author.type`, expressed as CSS variables + cva variants you can override.
+- **shadcn/ui primitives** under the hood, vendored into the package — your design system stays in charge.
 
-- **🌙 Dark Mode Only**: Beautiful, modern dark theme optimized for extended use
-- **🔥 Firebase Powered**: Real-time messaging with Firestore, file storage, and authentication
-- **🤖 AI Agent Integration**: Support for AI agents with @mention autocomplete system
-- **😊 Emoji Picker**: Interactive emoji picker with 15+ reactions for quick message enhancement
-- **📋 Dynamic Forms**: Zod-based form generation with modal interfaces using zod-form-react
-- **🔐 Hierarchical Access Control**: Flexible permission system for organizations, teams, and projects
-- **📎 Rich Media Support**: Images, videos, documents, YouTube embeds, and more
-- **⚡ Real-time Updates**: Live message updates and typing indicators
-- **🎨 Modern UI**: Clean, responsive interface built with Tailwind CSS
-- **📱 Mobile Friendly**: Responsive design that works on all devices
-
-## 🏗️ Architecture
-
-This is a complete rewrite of the original Node.js/Express/Pug system into a modern React application while maintaining the same powerful features:
-
-- **React 18** with TypeScript for type safety
-- **Firebase SDK v10** for backend services
-- **Tailwind CSS** for styling (dark theme only)
-- **Zod** for schema validation and form generation
-- **zod-form-react** for dynamic form rendering and modal interfaces
-- **Lucide React** for icons
-- **Date-fns** for date formatting
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- Node.js 16+ 
-- npm or yarn
-- Firebase project (or use emulators for development)
-
-### Key Dependencies
-
-This project relies on several important packages:
-- **zod-form-react**: Powers the dynamic form generation and modal interfaces
-- **Firebase SDK v10**: Provides real-time database, auth, and storage
-- **Tailwind CSS**: Handles all styling with a custom dark theme
-- **Lucide React**: Provides the icon system
-
-### Installation
-
-1. **Clone and install dependencies:**
-   ```bash
-   cd human-agent-chat
-   npm install
-   ```
-
-2. **Configure Firebase:**
-   ```bash
-   cp .env.example .env
-   ```
-   
-   For production, add your Firebase config to `.env`:
-   ```env
-   REACT_APP_FIREBASE_API_KEY=your_api_key
-   REACT_APP_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-   REACT_APP_FIREBASE_PROJECT_ID=your_project_id
-   REACT_APP_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-   REACT_APP_FIREBASE_MESSAGING_SENDER_ID=123456789
-   REACT_APP_FIREBASE_APP_ID=1:123456789:web:abcdef
-   REACT_APP_USE_FIREBASE_EMULATORS=false
-   ```
-
-3. **Start the development server:**
-   ```bash
-   npm start
-   ```
-
-### Using Firebase Emulators (Recommended for Development)
-
-The app is pre-configured to use Firebase emulators for development:
-
-1. **Install Firebase CLI:**
-   ```bash
-   npm install -g firebase-tools
-   ```
-
-2. **Start emulators (in a separate terminal):**
-   ```bash
-   # Copy emulator config from old_version
-   cp old_version/firebase.json .
-   cp old_version/firestore.rules .
-   cp old_version/storage.rules .
-   
-   firebase emulators:start
-   ```
-
-3. **Start React app:**
-   ```bash
-   npm start
-   ```
-
-The app will automatically connect to emulators when `REACT_APP_USE_FIREBASE_EMULATORS=true`.
-
-## 📚 Examples
-
-We've included comprehensive examples to help you get started quickly:
-
-### 🏃‍♂️ Quick Demo
+## Install
 
 ```bash
-# Install dependencies
-npm install
-
-# Run the advanced example with Firebase emulators
-npm run demo
+pnpm add @oftomorrow/human-agent-chat
 ```
 
-This starts both Firebase emulators and the advanced example at:
-- **Advanced Example**: http://localhost:3002
-- **Firebase Emulator UI**: http://localhost:4000
+React + react-dom are required peers. Firebase and `@supabase/supabase-js` are optional peers — install them only if you use the matching entry point.
 
-### 📖 Available Examples
-
-#### Basic Example
 ```bash
-npm run example:basic
-# Opens at http://localhost:3001
+# Optional, only if you want useFirebaseChat:
+pnpm add firebase
+
+# Optional, only if you want useSupabaseChat:
+pnpm add @supabase/supabase-js
 ```
 
-Features demonstrated:
-- Simple chat interface with user switching
-- AI agent integration with @mention autocomplete
-- Emoji picker with 15+ reactions
-- Real-time Firebase sync
-- Basic message types
+If your app doesn't already configure Tailwind + shadcn, import the bundled stylesheet:
 
-#### Advanced Example  
-```bash
-npm run example:advanced
-# Opens at http://localhost:3002
+```ts
+import '@oftomorrow/human-agent-chat/styles.css';
 ```
 
-Features demonstrated:
-- 🎨 **Rich Media**: Images, YouTube videos, audio, documents
-- 😊 **Interactive UI**: Emoji picker and @mention autocomplete
-- 📝 **Zod Forms**: Interactive schema-based forms
-- 🤖 **AI Interactions**: Smart analysis and insights
-- 👥 **Role Management**: Users, managers, AI agents
-- ⚙️ **System Messages**: Automated notifications
+## Quick start
 
-#### Run Both Examples
-```bash
-npm run examples
-# Basic: http://localhost:3001
-# Advanced: http://localhost:3002
-```
-
-### 🎮 Demo Scenarios
-
-The examples include interactive demo buttons to showcase:
-
-**Rich Media Workflow:**
-1. Send image galleries with lightbox viewing
-2. Share YouTube videos with embedded previews  
-3. Upload documents and audio files
-4. AI-generated visualizations
-
-**Zod Form Examples:**
-```javascript
-// Feedback form schema
-{
-  rating: "z.number().min(1).max(5).describe('Rate experience')",
-  comments: "z.string().min(10).describe('Detailed feedback')",
-  wouldRecommend: "z.boolean().describe('Recommend to others?')"
-}
-```
-
-**AI Agent Interactions:**
-- Technical analysis and insights
-- @mention targeting with autocomplete dropdown and smart responses
-- Form requests for structured data collection
-- Multi-modal responses with attachments
-
-**Interactive Chat Features:**
-- Emoji picker with 15+ reactions (👍 ❤️ 😂 😮 😢 😡 👀 🙏 🎯 💯 🤷 🎉 🚀 💡 🔥)
-- @mention autocomplete with user filtering and keyboard navigation
-- Click-outside-to-close dropdowns with proper z-index layering
-
-For detailed documentation, see [examples/README.md](./examples/README.md).
-
-## 🎮 Interactive Features
-
-### Emoji Picker
-Click the 😊 button in the message input to access an interactive emoji picker with 15+ reactions:
-- **Grid layout** with hover effects
-- **Instant insertion** at cursor position  
-- **Click outside to close** functionality
-- **Configurable emoji set** in `REACTION_EMOJIS` array
-
-### @Mention Autocomplete  
-Type `@` followed by any letter to trigger the mention autocomplete:
-- **Real-time filtering** as you type (e.g., `@a` shows Alice, `@c` shows Carol)
-- **Keyboard navigation** with arrow keys, tab, and enter
-- **Visual user avatars** with role indicators (AI agents, admins)
-- **Full name completion** with proper spacing
-
-### User Experience
-- **Proper z-index layering** ensures dropdowns appear above other elements
-- **Responsive positioning** relative to the input area
-- **Consistent dark theme** styling throughout
-- **Mobile-friendly** interactions
-
-## 🎯 Usage
-
-### Basic Chat Integration
+The component is pure — give it messages, it renders. Give it `onSend`, it calls you when the user types.
 
 ```tsx
-import { ChatUI } from './components/ChatUI';
-import { createUser } from './types';
+import { Chat, type Author, type Message } from '@oftomorrow/human-agent-chat';
+import '@oftomorrow/human-agent-chat/styles.css';
 
-const user = createUser({
-  id: 'user123',
-  displayName: 'John Doe',
-  email: 'john@example.com',
-  role: 'user'
-});
+const me: Author = { id: 'todd', name: 'Todd', type: 'user' };
+const planner: Author = { id: 'planner', name: 'Planning Agent', type: 'agent' };
 
-function App() {
+const initialMessages: Message[] = [
+  {
+    id: 'm1',
+    author: planner,
+    content: 'Ready when you are.',
+    createdAt: Date.now() - 60_000,
+    recipient: '@todd',
+    status: 'summary',
+  },
+];
+
+export function ChatPanel() {
+  const [messages, setMessages] = React.useState(initialMessages);
   return (
-    <ChatUI
-      firebasePath="chats/my-chat"
-      currentUser={user}
-      enableReactions={true}
-      enableMultiModal={true}
-      enableForms={true}
-      agentIds={['agent_assistant']}
-      onNewMessage={(message) => console.log('New message:', message)}
+    <Chat
+      messages={messages}
+      currentAuthor={me}
+      mentionableAuthors={[me, planner]}
+      onSend={async (draft) => {
+        setMessages((prev) => [
+          ...prev,
+          { ...draft, id: crypto.randomUUID(), createdAt: Date.now() },
+        ]);
+      }}
     />
   );
 }
 ```
 
-### Access Control Setup
+## With Firebase
 
 ```tsx
-import { AccessControl, AccessLevel } from './utils/access-control';
+import { Chat } from '@oftomorrow/human-agent-chat';
+import { useFirebaseChat } from '@oftomorrow/human-agent-chat/firebase';
+import { getFirestore } from 'firebase/firestore';
 
-// Initialize a chat with admin
-await AccessControl.initializeChat('chats/team-chat', 'admin-user-id');
+const db = getFirestore();
 
-// Add team members
-await AccessControl.addMember('chats/team-chat', 'user-id', AccessLevel.WRITE, 'admin-user-id');
+export function ProjectChat({ projectId }: { projectId: string }) {
+  const { messages, currentAuthor, onSend } = useFirebaseChat({
+    db,
+    path: `projects/${projectId}`, // messages live at `${path}/messages`
+    currentAuthor: { id: 'todd', name: 'Todd', type: 'user' },
+  });
 
-// Check access
-const hasAccess = await AccessControl.hasAccess('chats/team-chat', 'user-id', AccessLevel.READ);
-```
-
-### Form Integration with Zod
-
-```tsx
-import { z } from 'zod';
-
-const feedbackSchema = z.object({
-  rating: z.number().min(1).max(5),
-  feedback: z.string().min(10).max(500),
-  category: z.enum(['UI', 'Performance', 'Feature', 'Bug'])
-});
-
-// Send a form request
-await sendMessage('Please provide feedback', undefined, feedbackSchema);
-```
-
-## 🗂️ Firebase Data Structure
-
-The app uses a hierarchical structure for flexible access control:
-
-```
-organizations/
-  org-id/
-    members/          # Organization-level access
-    teams/
-      team-id/
-        members/      # Team-level access  
-        chats/
-          chat-id/
-            messages/ # Chat messages
-            members/  # Chat-specific access
-projects/
-  project-id/
-    members/          # Project-level access
-    chats/
-      chat-id/
-        messages/
-        members/
-chats/                # Direct chats
-  chat-id/
-    messages/
-    members/
-```
-
-## 🎨 Customization
-
-### Styling
-
-The app uses Tailwind CSS with a custom dark theme. Key CSS variables:
-
-```css
-:root {
-  --chat-bg: #0f172a;        /* Background */
-  --chat-surface: #1e293b;    /* Surface */
-  --chat-border: #334155;     /* Borders */
-  --chat-text: #f1f5f9;      /* Text */
-  --chat-accent: #3b82f6;     /* Accent */
-  --chat-agent: #8b5cf6;      /* AI Agent */
+  return <Chat messages={messages} currentAuthor={currentAuthor} onSend={onSend} />;
 }
 ```
 
-### Adding Custom Message Types
+The hook subscribes to `${path}/messages` ordered by `createdAt` and writes via `addDoc` on send. Pass `resolveAuthor` if your DB stores only `author_id` and you want to hydrate from a directory.
 
-1. **Extend the attachment schema:**
-   ```tsx
-   export const customAttachmentSchema = attachmentSchema.extend({
-     type: z.enum([...AttachmentTypeEnum.options, 'custom-type'])
-   });
-   ```
+## With Supabase
 
-2. **Add rendering logic in MessageItem.tsx:**
-   ```tsx
-   case 'custom-type':
-     return renderCustomAttachment(attachment);
-   ```
+```tsx
+import { Chat } from '@oftomorrow/human-agent-chat';
+import { useSupabaseChat } from '@oftomorrow/human-agent-chat/supabase';
+import { createClient } from '@supabase/supabase-js';
 
-## 🔧 Development
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-### Available Scripts
+export function JobChat({ jobId, companyId }: { jobId: string; companyId: string }) {
+  const { messages, currentAuthor, onSend } = useSupabaseChat({
+    client: supabase,
+    subjectType: 'job',
+    subjectId: jobId,
+    companyId,
+    currentAuthor: { id: 'todd', name: 'Todd', type: 'user' },
+  });
 
-**Development:**
-- `npm start` - Start development server
-- `npm build` - Build for production  
-- `npm test` - Run tests
-- `npm run lint` - Check code quality
-- `npm run format` - Format code with Prettier
-- `npm run type-check` - TypeScript type checking
-
-**Examples:**
-- `npm run demo` - Run advanced example with Firebase emulators
-- `npm run example:basic` - Run basic example (port 3001)
-- `npm run example:advanced` - Run advanced example (port 3002)
-- `npm run examples` - Run both examples simultaneously
-- `npm run emulators` - Start Firebase emulators only
-
-**Testing:**
-- `npm run test` - Run React component tests
-- `npm run test:examples` - Run comprehensive integration tests for examples
-- `npm run test:examples:watch` - Run integration tests in watch mode
-- `npm run test:all` - Run both React and example tests
-
-### Project Structure
-
-```
-src/
-├── components/          # React components
-│   ├── ChatUI.tsx      # Main chat interface
-│   ├── MessageItem.tsx # Individual message rendering
-│   ├── Modal.tsx       # Base modal component
-│   ├── FormModal.tsx   # Zod form modal
-│   └── MediaUploadModal.tsx # Media upload interface
-├── lib/
-│   └── firebase.ts     # Firebase configuration
-├── utils/
-│   └── access-control.ts # Access control utilities
-├── types/
-│   └── index.ts        # TypeScript definitions
-└── App.tsx            # Main application
+  return <Chat messages={messages} currentAuthor={currentAuthor} onSend={onSend} />;
+}
 ```
 
-## 🚀 Deployment
+The hook initial-loads the latest 200 rows from `chat_messages` filtered by `subject_type` + `subject_id`, then subscribes to inserts via a Realtime channel. Writes go through `client.from('chat_messages').insert(...)`. Override the table name with the `table` option if your schema differs.
 
-### Production Build
+The shape it expects on disk mirrors Core's `chat_messages` columns: `id`, `company_id`, `subject_type`, `subject_id`, `author_type`, `author_id`, `status`, `recipient`, `content`, `metadata`, `created_at`.
+
+## Rolling your own backend
+
+`<Chat>` only asks for three things:
+
+```ts
+type ChatProps = {
+  messages: Message[];
+  currentAuthor: Author;
+  onSend: (draft: MessageDraft) => Promise<void>;
+  mentionableAuthors?: Author[];
+  className?: string;
+  placeholder?: string;
+  readOnly?: boolean;
+};
+```
+
+To wire a new backend, write a hook that returns `{ messages, currentAuthor, onSend }`. The library's own hooks are a good template — both fewer than 200 LOC each. Subscribe on mount, append on insert, dedupe by id, write through `onSend`.
+
+## Author types + theming
+
+Each `Message.author.type` drives the avatar fallback color and the role badge. Defaults:
+
+| `Author.type` | Color (CSS var)      | Badge label |
+| ------------- | -------------------- | ----------- |
+| `user`        | `--author-user`      | (none)      |
+| `agent`       | `--author-agent`     | `AI`        |
+| `runner`      | `--author-runner`    | `RUNNER`    |
+| `effective`   | `--author-effective` | `EFFECTIVE` |
+| `coo`         | `--author-coo`       | `COO`       |
+| `chair`       | `--author-chair`     | `CHAIR`     |
+| `system`      | `--author-system`    | `SYSTEM`    |
+
+Override any of these by redeclaring the variable in your app's CSS — same as any shadcn token. The values are HSL components (no `hsl()` wrapper):
+
+```css
+:root {
+  --author-agent: 200 100% 50%;
+}
+```
+
+## Tailwind setup
+
+If your app already uses Tailwind, add this package's compiled files to your `content` glob so classes used inside the library are kept:
+
+```ts
+// tailwind.config.ts
+export default {
+  content: [
+    './src/**/*.{ts,tsx}',
+    './node_modules/@oftomorrow/human-agent-chat/dist/**/*.{js,mjs,cjs}',
+  ],
+  // …
+};
+```
+
+If you don't have Tailwind set up, just import `@oftomorrow/human-agent-chat/styles.css` once — it ships precompiled with preflight + the shadcn variables + the author-type palette.
+
+## API reference
+
+### `<Chat>`
+
+| Prop                 | Type                                     | Required | Default             |
+| -------------------- | ---------------------------------------- | -------- | ------------------- |
+| `messages`           | `Message[]`                              | yes      | —                   |
+| `currentAuthor`      | `Author`                                 | yes      | —                   |
+| `onSend`             | `(draft: MessageDraft) => Promise<void>` | yes      | —                   |
+| `mentionableAuthors` | `Author[]`                               | no       | `[]`                |
+| `placeholder`        | `string`                                 | no       | `'Type a message…'` |
+| `className`          | `string`                                 | no       | —                   |
+| `readOnly`           | `boolean`                                | no       | `false`             |
+
+### `Message`
+
+```ts
+interface Message {
+  id: string;
+  author: Author;
+  recipient?: string | null; // '@<role>' or '@<user>'
+  content: string;
+  createdAt: number; // epoch ms
+  status?: 'summary' | 'request' | 'blocked';
+  metadata?: Record<string, unknown>;
+}
+
+type MessageDraft = Omit<Message, 'id' | 'createdAt'>;
+```
+
+### `Author`
+
+```ts
+interface Author {
+  id: string;
+  name: string;
+  type: 'user' | 'agent' | 'runner' | 'effective' | 'coo' | 'chair' | 'system';
+  avatar?: string;
+}
+```
+
+## Development
 
 ```bash
-npm run build
+pnpm install
+pnpm dev           # runs the examples/ playground at http://localhost:5173
+pnpm test          # vitest run
+pnpm coverage      # vitest run --coverage
+pnpm build         # vite library build + Tailwind-compiled styles.css
+pnpm exec effective audit --fix
 ```
 
-### Deploy to Firebase Hosting
-
-```bash
-firebase init hosting
-firebase deploy
-```
-
-### Environment Variables
-
-Set production environment variables:
-
-```env
-REACT_APP_USE_FIREBASE_EMULATORS=false
-REACT_APP_FIREBASE_API_KEY=your_production_key
-# ... other Firebase config
-```
-
-## 🤝 Comparison with Original
-
-| Feature | Original (Node.js/Pug) | React Version |
-|---------|------------------------|---------------|
-| UI Framework | Server-rendered Pug + HTMX | React 18 + TypeScript |
-| Styling | Custom CSS | Tailwind CSS |
-| Forms | Server-side Zod rendering | zod-form-react modals |
-| Real-time | SSE + polling | Firebase listeners |
-| File Uploads | Express multer | Firebase Storage |
-| State Management | Server state | React state + Firebase |
-| Build System | TypeScript + custom | Create React App |
-
-## 📋 Features from Original
-
-✅ **Fully Implemented:**
-- Hierarchical access control
-- Multi-modal content (images, videos, documents, audio)
-- AI agent integration with @mention autocomplete (types `@` + letter to see dropdown)
-- **Emoji picker** with 15 configurable reactions (click 😊 button to see dropdown)
-- **@mention autocomplete** with user filtering, keyboard navigation (arrow keys, tab, enter)
-- Zod-based form generation with stars/slider elements
-- Dark theme UI
-- Firebase integration with emulator support
-- Real-time messaging
-- File uploads with drag & drop
-- **Emoji reactions** for messages with configurable emojis
-- **Advanced lightbox** for media viewing
-- **Audio playback** with generated WAV files
-- **User switching** with proper message ownership
-- **Click-to-edit** for text messages
-- **Comprehensive test suite**
-
-🚧 **Future Enhancements:**
-- Message threading/replies
-- Typing indicators
-- Message search
-- Push notifications
-- Message history/pagination
-
-## 🐛 Troubleshooting
-
-### Firebase Emulator Issues
-
-1. **Port conflicts:** Check that ports 9099, 8080, 9199 are available
-2. **Rules errors:** Ensure `firestore.rules` and `storage.rules` exist
-3. **Clear emulator data:** Delete `emulator-data/` folder
-
-### Build Issues
-
-1. **TypeScript errors:** Run `npm run build` to see all errors
-2. **Missing dependencies:** Run `npm install` to ensure all packages are installed
-3. **Environment variables:** Check `.env` file configuration
-
-## 📄 License
+## License
 
 MIT
-
-## 🙏 Acknowledgments
-
-- Built on the foundation of the original human-agent-chat Node.js system
-- Uses [zod-form-react](https://github.com/oftomorrowinc/zod-form-react) for form generation
-- Inspired by modern chat interfaces like Discord and Slack
-
----
-
-**Ready to chat with humans and AI? Start your development server and experience the future of collaborative communication! 🚀**
