@@ -9,7 +9,11 @@ import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { Author, AuthorType, Message } from '@/types';
 import { formatMentions } from '@/utils/message-helpers';
-import { detectMediaInContent, type MediaAttachment } from '@/utils/media-helpers';
+import {
+  detectMediaInContent,
+  processMessageContent,
+  type MediaAttachment,
+} from '@/utils/media-helpers';
 
 /** Author-type → avatar ring + badge color. Drives the per-role palette. */
 const authorVariants = cva('text-white', {
@@ -179,7 +183,12 @@ export const MessageItem: React.FC<MessageItemProps> = ({
 }) => {
   const isSelf = message.author.id === currentAuthorId;
   const attachments = React.useMemo(() => detectMediaInContent(message.content), [message.content]);
-  const contentHtml = React.useMemo(() => formatMentions(message.content), [message.content]);
+  // Strip detected media URLs from the displayed text via processMessageContent
+  // so attachments render as images only, not also as raw URL text.
+  const contentHtml = React.useMemo(
+    () => formatMentions(processMessageContent(message.content).content),
+    [message.content],
+  );
   const badgeLabel = TYPE_BADGE[message.author.type];
   const statusLabel = message.status && message.status !== 'summary' ? message.status : null;
 

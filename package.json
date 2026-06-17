@@ -1,6 +1,6 @@
 {
   "name": "@oftomorrow/human-agent-chat",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "React chat component for human + AI-agent threads, with @-mentions and pluggable Firebase/Supabase backends.",
   "license": "MIT",
   "author": "Of Tomorrow",

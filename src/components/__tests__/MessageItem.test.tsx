@@ -76,6 +76,20 @@ describe('MessageItem', () => {
     expect(screen.getByRole('img', { name: /image/i })).toBeInTheDocument();
   });
 
+  it('strips detected media URLs from the displayed text (image-only, no raw URL)', () => {
+    const { container } = render(
+      <MessageItem
+        message={{ ...baseMessage, content: 'look https://example.com/cat.png' }}
+        currentAuthorId="other"
+      />,
+    );
+    // image still renders…
+    expect(screen.getByRole('img', { name: /image/i })).toBeInTheDocument();
+    // …but the raw URL text is gone from the message body
+    expect(container.textContent).toContain('look');
+    expect(container.textContent).not.toContain('https://example.com/cat.png');
+  });
+
   it('formats mentions with span.mention', () => {
     const { container } = render(
       <MessageItem message={{ ...baseMessage, content: 'hi @alice' }} currentAuthorId="other" />,

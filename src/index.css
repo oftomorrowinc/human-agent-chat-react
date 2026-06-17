@@ -5,10 +5,17 @@
 /*
  * Standard shadcn/ui theme tokens — consumers can import this file via
  *   import '@oftomorrow/human-agent-chat/styles.css';
- * Skip the import if your app already defines the same CSS variables.
+ *
+ * The light :root defaults are wrapped in :where() so they have ZERO
+ * specificity: a host app that defines its own :root / .dark tokens (e.g. a
+ * dark theme) always wins, and these apply only as standalone fallbacks. This
+ * enforces the "skip the import if your app already defines the same variables"
+ * guidance via the cascade — embedding the widget in a themed (dark) app no
+ * longer forces it light. The .dark block stays normal-specificity so the
+ * package's own dark mode still works standalone.
  */
 @layer base {
-  :root {
+  :where(:root) {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
